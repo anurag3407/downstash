@@ -1,3 +1,6 @@
+/**
+ * @file apps/gateway/test/usage-buffer.test.ts
+ */
 import { describe, expect, it } from 'vitest';
 import { UsageBuffer } from '../src/core/usage-buffer.ts';
 

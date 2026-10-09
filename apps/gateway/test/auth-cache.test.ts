@@ -1,3 +1,6 @@
+/**
+ * @file apps/gateway/test/auth-cache.test.ts
+ */
 import { describe, expect, it } from 'vitest';
 import { AuthCache } from '../src/core/auth-cache.ts';
 

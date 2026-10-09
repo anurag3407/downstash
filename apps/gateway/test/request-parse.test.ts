@@ -1,3 +1,6 @@
+/**
+ * @file apps/gateway/test/request-parse.test.ts
+ */
 import { describe, expect, it } from 'vitest';
 import { parseJsonBody, parsePathCommand } from '../src/core/request-parse.ts';
 import { ERRORS } from '@downstash/protocol';

@@ -1,3 +1,6 @@
+/**
+ * @file apps/gateway/test/auth.test.ts
+ */
 import { describe, expect, it } from 'vitest';
 import { extractToken, authenticate } from '../src/core/auth.ts';
 import { AuthCache } from '../src/core/auth-cache.ts';

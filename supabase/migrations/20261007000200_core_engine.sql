@@ -235,13 +235,13 @@ volatile
 set search_path = ''
 as $$
 declare
-  v_was_live boolean;
+  v_n int;
 begin
   delete from downstash.kv
     where db_id = p_db and key = p_key
       and (expires_at is null or expires_at > now());
-  get diagnostics v_was_live = row_count;
-  return v_was_live > 0;
+  get diagnostics v_n = row_count;
+  return v_n > 0;
 end;
 $$;
 
@@ -272,7 +272,7 @@ begin
       else
         perform downstash.raise_err('ERR Downstash: each command must be a JSON array of strings');
     end case;
-    if position(chr(0) in v_s) > 0 then
+    if position('\x00'::bytea in convert_to(v_s, 'utf8')) > 0 then
       perform downstash.raise_err('ERR Downstash: command contains null bytes');
     end if;
     v_out := array_append(v_out, v_s);
@@ -503,7 +503,8 @@ begin
       v_argv := downstash.to_argv(v_cmd);
       v_result := null;
       v_flags := null;
-      downstash.dispatch(p_db, p_readonly, v_argv, v_result, v_flags);
+      select o_result, o_flags into v_result, v_flags
+        from downstash.dispatch(p_db, p_readonly, v_argv);
       v_items := v_items || jsonb_build_array(jsonb_build_object('result', v_result));
       v_commands := v_commands + 1;
       if v_flags is not null and 'read' = any(v_flags) then v_reads := v_reads + 1; end if;

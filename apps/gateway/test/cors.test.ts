@@ -1,3 +1,6 @@
+/**
+ * @file apps/gateway/test/cors.test.ts
+ */
 import { describe, expect, it } from 'vitest';
 import { resolveCorsOrigin, preflightResponse } from '../src/middleware/cors.ts';
 

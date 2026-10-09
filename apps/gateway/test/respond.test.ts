@@ -1,3 +1,6 @@
+/**
+ * @file apps/gateway/test/respond.test.ts
+ */
 import { describe, expect, it } from 'vitest';
 import { respondSingle, respondMany, respondError } from '../src/core/respond.ts';
 import { wantsBase64, maybeEncode } from '../src/core/encoding.ts';

@@ -55,7 +55,7 @@ begin
       if i + 1 > v_n then perform downstash.err_args('set'); end if;
       v_num := downstash.to_int(p_args[i + 1], 'ERR value is not an integer or out of range');
       if v_num <= 0 then
-        perform downstash.raise_err("ERR invalid expire time in 'set' command");
+        perform downstash.raise_err('ERR invalid expire time in ''set'' command');
       end if;
       if v_opt = 'EX' then
         v_exp_at := now() + make_interval(secs => v_num);
@@ -136,7 +136,7 @@ returns jsonb
 language plpgsql volatile set search_path = '' as $$
 begin
   perform downstash.put(p_db, p_args[1], 'string', to_jsonb(p_args[3]),
-    now() + make_interval(secs => downstash.to_int(p_args[2], "ERR invalid expire time in 'setex' command")));
+    now() + make_interval(secs => downstash.to_int(p_args[2], 'ERR invalid expire time in ''setex'' command')));
   return '"OK"'::jsonb;
 end;
 $$;
@@ -147,7 +147,7 @@ returns jsonb
 language plpgsql volatile set search_path = '' as $$
 begin
   perform downstash.put(p_db, p_args[1], 'string', to_jsonb(p_args[3]),
-    now() + make_interval(secs => (downstash.to_int(p_args[2], "ERR invalid expire time in 'psetex' command")::numeric / 1000)));
+    now() + make_interval(secs => (downstash.to_int(p_args[2], 'ERR invalid expire time in ''psetex'' command')::numeric / 1000)));
   return '"OK"'::jsonb;
 end;
 $$;
@@ -160,9 +160,11 @@ create or replace function downstash.cmd_getset(p_db uuid, p_args text[])
 returns jsonb
 language plpgsql volatile set search_path = '' as $$
 declare
+  v_row downstash.kv;
   v_old jsonb;
 begin
-  v_old := coalesce(downstash.read_live(p_db, p_args[1], 'string').val, 'null'::jsonb);
+  v_row := downstash.read_live(p_db, p_args[1], 'string');
+  v_old := coalesce(v_row.val, 'null'::jsonb);
   perform downstash.put(p_db, p_args[1], 'string', to_jsonb(p_args[2]), null);
   return v_old;
 end;

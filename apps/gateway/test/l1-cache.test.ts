@@ -1,3 +1,6 @@
+/**
+ * @file apps/gateway/test/l1-cache.test.ts
+ */
 import { describe, expect, it } from 'vitest';
 import { L1Cache } from '../src/core/l1-cache.ts';
 
