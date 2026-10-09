@@ -1,0 +1,17 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "downstash",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-01",
+  "observability": { "enabled": true },
+  "triggers": { "crons": ["0 */6 * * *"] },
+  "vars": {
+    "DOWNSTASH_VERSION": "1.0.0",
+    "ALLOWED_ORIGINS": "*",
+    "MAX_REQUEST_BYTES": "1048576",
+    "MAX_PIPELINE_COMMANDS": "1000",
+    "AUTH_CACHE_TTL_MS": "60000",
+    "NEGATIVE_AUTH_CACHE_TTL_MS": "30000",
+    "RPC_TIMEOUT_MS": "8000"
+  }
+}

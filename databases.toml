@@ -1,0 +1,23 @@
+# Local token definitions for `pnpm gen:token`. COMMIT THIS FILE.
+# Only the SHA-256 hashes end up in supabase/seed.sql. In production, rotate
+# tokens in the Supabase dashboard instead of editing this file.
+#
+# Rules: slug ^[a-z0-9]([a-z0-9-]*[a-z0-9])?$; token >= 32 chars, no spaces.
+
+[[databases]]
+slug = "primary"
+name = "Primary"
+
+[[tokens]]
+name = "default"
+token = "dts_local_development_token_000000000000000000"
+db = "primary"
+read_only = false
+# rate_per_sec = 10
+# rate_burst = 20
+
+[[tokens]]
+name = "readonly"
+token = "dts_local_readonly_token_00000000000000000000"
+db = "primary"
+read_only = true

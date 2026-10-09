@@ -1,0 +1,14 @@
+node_modules/
+dist/
+.wrangler/
+coverage/
+.turbo/
+*.log
+.env
+.env.local
+.env.*.local
+.DS_Store
+*.tsbuildinfo
+.serena/
+.idea/
+.vscode/

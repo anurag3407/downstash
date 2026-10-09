@@ -1,0 +1,39 @@
+{
+  "name": "downstash",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.13.1",
+  "engines": {
+    "node": ">=20.19"
+  },
+  "scripts": {
+    "build": "pnpm -r --filter './packages/*' build && pnpm --filter @downstash/gateway build",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "db:start": "supabase start",
+    "db:stop": "supabase stop",
+    "db:reset": "supabase db reset",
+    "db:test": "node --experimental-strip-types supabase/tests/run-sql.mjs",
+    "check:docs": "node tooling/check-docs/src/index.ts",
+    "check:design": "node tooling/check-design/src/index.ts",
+    "gen:token": "node tooling/gen-token/src/index.ts",
+    "gen:enc-key": "node tooling/gen-enc-key/src/index.ts",
+    "gateway:dev": "pnpm --filter @downstash/gateway dev"
+  },
+  "devDependencies": {
+    "@eslint/js": "9.15.0",
+    "@types/node": "20.17.9",
+    "@vitest/coverage-v8": "2.1.8",
+    "eslint": "9.15.0",
+    "eslint-config-prettier": "9.1.0",
+    "prettier": "3.4.1",
+    "typescript": "5.7.2",
+    "typescript-eslint": "8.16.0",
+    "vitest": "2.1.8",
+    "wrangler": "3.91.0"
+  }
+}

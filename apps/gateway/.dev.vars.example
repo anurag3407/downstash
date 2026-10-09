@@ -1,0 +1,5 @@
+# Local gateway secrets. Copy to .dev.vars and fill in.
+# Values printed by `supabase start` / `supabase status`.
+SUPABASE_URL=http://127.0.0.1:54321
+# Local: the "Secret key" (or legacy service_role key) printed by supabase start / status.
+SUPABASE_SECRET_KEY=replace-me
