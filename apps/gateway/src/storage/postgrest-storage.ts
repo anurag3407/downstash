@@ -69,20 +69,18 @@ export class PostgrestStorage implements Storage {
       }
 
       if (res.status >= 200 && res.status < 300) {
-        const pj = json?.principal as Record<string, unknown> | undefined;
-        const p = pj
-          ? {
-              dbId: String(pj.db_id ?? pj.dbId),
-              readonly: Boolean(pj.readonly),
-              l1TtlMs: Number(pj.l1_ttl_ms ?? pj.l1TtlMs ?? 0)
-            }
-          : undefined;
+        // downstash_gw_run returns { ok, db, readonly, l1TtlMs, results }.
+        const db = json?.db !== undefined && json.db !== null ? String(json.db) : '';
+        const readonly = Boolean(json?.readonly);
+        const l1TtlMs = Number(json?.l1TtlMs ?? 0);
+        const principal =
+          db !== '' ? { dbId: db, readonly, l1TtlMs } : undefined;
         const base: RunResponse = {
           ok: true,
           status: 200,
-          envelopes: (json?.result ?? json ?? null) as unknown
+          envelopes: (json?.results ?? null) as unknown
         };
-        return p ? { ...base, principal: p } : base;
+        return principal ? { ...base, principal } : base;
       }
 
       // Auth failure: no retry.

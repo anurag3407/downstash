@@ -9,7 +9,6 @@ language sql immutable set search_path = '' as $$
   select encode(extensions.digest(p_body, 'sha1'), 'hex');
 $$;
 
-drop function if exists downstash.resolve_script(text);
 create or replace function downstash.resolve_script(p_sha text)
 returns setof downstash.scripts
 language sql stable set search_path = '' as $$
