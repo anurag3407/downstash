@@ -29,7 +29,13 @@ function main(): number {
     process.stdout.write('check-design: apps/web not present, skipping\n');
     return 0;
   }
-  const violations: Array<{ file: string; line: number; column: number; rule: string; message: string }> = [];
+  const violations: Array<{
+    file: string;
+    line: number;
+    column: number;
+    rule: string;
+    message: string;
+  }> = [];
   for (const base of SCAN_DIRS) {
     const dir = path.join(webRoot, base);
     if (!existsSync(dir)) continue;
@@ -45,7 +51,9 @@ function main(): number {
   if (violations.length > 0) {
     process.stderr.write('check-design failed:\n');
     for (const v of violations) {
-      process.stderr.write(`  ${v.file}:${v.line}:${v.column} [${v.rule}] ${v.message}\n`);
+      process.stderr.write(
+        `  ${v.file}:${v.line}:${v.column} [${v.rule}] ${v.message}\n`
+      );
     }
     return 1;
   }

@@ -14,7 +14,11 @@ export class L1Cache {
   private readonly map = new Map<string, Entry>();
 
   constructor(
-    private readonly opts: { maxEntries: number; maxValueBytes: number; now: () => number }
+    private readonly opts: {
+      maxEntries: number;
+      maxValueBytes: number;
+      now: () => number;
+    }
   ) {}
 
   /** Cache key: dbId + NUL + argv joined by NUL. Null bytes are banned in argv. */

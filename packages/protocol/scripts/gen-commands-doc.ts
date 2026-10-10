@@ -73,7 +73,9 @@ function main(): void {
 
   mkdirSync(path.dirname(outPath), { recursive: true });
   writeFileSync(outPath, body, 'utf8');
-  process.stdout.write(`wrote ${path.relative(process.cwd(), outPath)} (${total} commands)\n`);
+  process.stdout.write(
+    `wrote ${path.relative(process.cwd(), outPath)} (${total} commands)\n`
+  );
 }
 
 main();

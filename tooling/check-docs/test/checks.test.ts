@@ -12,7 +12,9 @@ import {
 
 describe('checkFileHeaders', () => {
   it('flags files missing @file header', () => {
-    const problems = checkFileHeaders([{ path: 'a.ts', content: 'export const x = 1;' }]);
+    const problems = checkFileHeaders([
+      { path: 'a.ts', content: 'export const x = 1;' }
+    ]);
     expect(problems).toHaveLength(1);
     expect(problems[0]).toContain('@file');
   });
@@ -38,7 +40,9 @@ describe('checkUnreferencedDocs', () => {
 
 describe('extractReadmeLinks', () => {
   it('extracts local links and skips URLs', () => {
-    const links = extractReadmeLinks('[a](progress.md) [b](https://x.com) [c](./codemap.md)');
+    const links = extractReadmeLinks(
+      '[a](progress.md) [b](https://x.com) [c](./codemap.md)'
+    );
     expect(links).toEqual(['progress.md', 'codemap.md']);
   });
 });

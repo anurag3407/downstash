@@ -10,7 +10,12 @@ import {
 } from '@downstash/protocol';
 
 export type Parsed =
-  | { ok: true; mode: 'single' | 'pipeline' | 'multi'; commands: string[][]; raw?: unknown }
+  | {
+      ok: true;
+      mode: 'single' | 'pipeline' | 'multi';
+      commands: string[][];
+      raw?: unknown;
+    }
   | { ok: false; error: string };
 
 /** Parse a JSON body for POST /, POST /pipeline, POST /multi-exec. */

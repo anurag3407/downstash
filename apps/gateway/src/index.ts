@@ -32,7 +32,11 @@ export default {
   async fetch(request: Request, env: Env, _ctx: ExecutionContext): Promise<Response> {
     try {
       const a = getApp(env);
-      return await a.hono.fetch(request, env as unknown as Record<string, unknown>, _ctx);
+      return await a.hono.fetch(
+        request,
+        env as unknown as Record<string, unknown>,
+        _ctx
+      );
     } catch {
       // Config errors (e.g. missing SUPABASE_URL) → 500 without leaking secrets.
       return new Response(JSON.stringify({ error: 'ERR Downstash: internal error' }), {
@@ -43,13 +47,19 @@ export default {
   },
 
   /** Scheduled keep-alive (§9.1 src/scheduled.ts). */
-  async scheduled(_event: ScheduledController, env: Env, _ctx: ExecutionContext): Promise<void> {
+  async scheduled(
+    _event: ScheduledController,
+    env: Env,
+    _ctx: ExecutionContext
+  ): Promise<void> {
     try {
       const a = getApp(env);
       const ping = await a.deps.storage.ping();
       console.log(JSON.stringify({ level: 'info', msg: 'keepalive', ok: ping.ok }));
     } catch (err) {
-      console.error(JSON.stringify({ level: 'error', msg: 'keepalive failed', error: String(err) }));
+      console.error(
+        JSON.stringify({ level: 'error', msg: 'keepalive failed', error: String(err) })
+      );
     }
   }
 } satisfies ExportedHandler<Env>;

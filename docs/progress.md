@@ -13,17 +13,17 @@ Task tracker. Status is one of `TODO`, `IN PROGRESS`, `DONE`, `BLOCKED`.
 
 ## Status summary
 
-| Phase | Focus | Status |
-|-------|-------|--------|
-| P0 | Scaffolding, docs, design tokens, tooling | DONE |
-| P1 | Storage engine command families | DONE |
-| P2 | Gateway | DONE |
-| P3 | Client SDK | DONE |
-| P4 | Scripts + ratelimit capture | IN PROGRESS |
-| P5 | Console/web | TODO |
-| P6 | Deploy + ops | TODO |
-| P7 | Testing (compat/differential) | TODO |
-| P8 | Hardening + launch | TODO |
+| Phase | Focus                                     | Status      |
+| ----- | ----------------------------------------- | ----------- |
+| P0    | Scaffolding, docs, design tokens, tooling | DONE        |
+| P1    | Storage engine command families           | DONE        |
+| P2    | Gateway                                   | DONE        |
+| P3    | Client SDK                                | DONE        |
+| P4    | Scripts + ratelimit capture               | IN PROGRESS |
+| P5    | Console/web                               | TODO        |
+| P6    | Deploy + ops                              | TODO        |
+| P7    | Testing (compat/differential)             | TODO        |
+| P8    | Hardening + launch                        | TODO        |
 
 ## P0-T1 — Scaffold
 

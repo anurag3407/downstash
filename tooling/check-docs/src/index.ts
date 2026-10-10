@@ -41,7 +41,10 @@ function main(): number {
     const dir = path.join(root, base);
     if (!existsSync(dir)) continue;
     for (const full of walk(dir, [])) {
-      files.push({ path: path.relative(root, full), content: readFileSync(full, 'utf8') });
+      files.push({
+        path: path.relative(root, full),
+        content: readFileSync(full, 'utf8')
+      });
     }
   }
   problems.push(...checkFileHeaders(files));

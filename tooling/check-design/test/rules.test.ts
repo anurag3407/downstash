@@ -26,13 +26,19 @@ describe('scanContent', () => {
     expect(v.some((x) => x.rule === 'raw-hex')).toBe(true);
   });
   it('flags grays', () => {
-    expect(scanContent('text-gray-500', 'a.tsx').some((x) => x.rule === 'grays')).toBe(true);
+    expect(scanContent('text-gray-500', 'a.tsx').some((x) => x.rule === 'grays')).toBe(
+      true
+    );
   });
   it('flags ease-in-out', () => {
-    expect(scanContent('ease-in-out', 'a.tsx').some((x) => x.rule === 'soft-easing')).toBe(true);
+    expect(
+      scanContent('ease-in-out', 'a.tsx').some((x) => x.rule === 'soft-easing')
+    ).toBe(true);
   });
   it('flags default shadow-md', () => {
-    expect(scanContent('shadow-md', 'a.tsx').some((x) => x.rule === 'default-shadow')).toBe(true);
+    expect(
+      scanContent('shadow-md', 'a.tsx').some((x) => x.rule === 'default-shadow')
+    ).toBe(true);
   });
   it('allows shadow-neo-md', () => {
     expect(scanContent('shadow-neo-md', 'a.tsx')).toHaveLength(0);

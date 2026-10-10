@@ -82,8 +82,8 @@ insert into downstash.command_registry (name, handler, arity, flags, first_key, 
   ('PING',    'downstash.cmd_ping',    -1, '{read}',        0, 0, 0, 'server', 'Ping the server'),
   ('ECHO',    'downstash.cmd_echo',    2,  '{read}',        0, 0, 0, 'server', 'Echo the given string'),
   ('DBSIZE',  'downstash.cmd_dbsize',  1,  '{read}',        0, 0, 0, 'server', 'Return the number of keys in the database'),
-  ('FLUSHDB', 'downstash.cmd_flushdb', -1, '{write,admin}', 0, 0, 0, 'server', 'Remove all keys from the current database'),
-  ('FLUSHALL','downstash.cmd_flushall',-1, '{write,admin}', 0, 0, 0, 'server', 'Remove all keys from all databases'),
+  ('FLUSHDB', 'downstash.cmd_flushdb', -1, '{admin,write}', 0, 0, 0, 'server', 'Remove all keys from the current database'),
+  ('FLUSHALL','downstash.cmd_flushall',-1, '{admin,write}', 0, 0, 0, 'server', 'Remove all keys from all databases'),
   ('TIME',    'downstash.cmd_time',    1,  '{read}',        0, 0, 0, 'server', 'Return the current server time')
 on conflict (name) do update set
   handler = excluded.handler, arity = excluded.arity, flags = excluded.flags,

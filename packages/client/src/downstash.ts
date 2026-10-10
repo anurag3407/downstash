@@ -46,7 +46,8 @@ export class Downstash {
     if (isEnvelopeArray(raw)) {
       // Defensive: gateway should not return an array for single.
       const first = raw[0];
-      if (first && 'error' in first) throw new DownstashError(first.error, { command: argv[0], source: 'gateway' });
+      if (first && 'error' in first)
+        throw new DownstashError(first.error, { command: argv[0], source: 'gateway' });
       return decode((first?.result ?? null) as RedisValue) as T;
     }
     if (raw && 'error' in raw) {
@@ -59,7 +60,8 @@ export class Downstash {
   async pipeline(commands: Command[]): Promise<ResultEnvelope[]> {
     const argvs = normalizePipeline(commands, 1000);
     const raw = await this.transport.run('pipeline', undefined, argvs);
-    if (isEnvelopeArray(raw)) return raw.map((e) => ('error' in e ? e : { result: decode(e.result) }));
+    if (isEnvelopeArray(raw))
+      return raw.map((e) => ('error' in e ? e : { result: decode(e.result) }));
     return [];
   }
 

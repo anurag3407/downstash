@@ -12,9 +12,5 @@ export type {
   FailoverEvent,
   RawEnvelopeOrArray
 } from './types.ts';
-export type {
-  Requester,
-  UpstashRequest,
-  UpstashResponse
-} from './requester.ts';
+export type { Requester, UpstashRequest, UpstashResponse } from './requester.ts';
 export type { ResultEnvelope, RedisValue } from '@downstash/protocol';

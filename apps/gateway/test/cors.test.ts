@@ -10,7 +10,9 @@ describe('resolveCorsOrigin', () => {
     expect(resolveCorsOrigin('*', null)).toBe('*');
   });
   it('echoes a listed origin', () => {
-    expect(resolveCorsOrigin('https://a.com,https://b.com', 'https://b.com')).toBe('https://b.com');
+    expect(resolveCorsOrigin('https://a.com,https://b.com', 'https://b.com')).toBe(
+      'https://b.com'
+    );
   });
   it('returns null for unlisted origin', () => {
     expect(resolveCorsOrigin('https://a.com', 'https://evil.com')).toBe(null);
@@ -22,7 +24,10 @@ describe('resolveCorsOrigin', () => {
 
 describe('preflightResponse', () => {
   it('is 204 with methods and max-age', () => {
-    const req = new Request('http://x/', { method: 'OPTIONS', headers: { Origin: 'https://a.com' } });
+    const req = new Request('http://x/', {
+      method: 'OPTIONS',
+      headers: { Origin: 'https://a.com' }
+    });
     const res = preflightResponse('https://a.com', req);
     expect(res.status).toBe(204);
     expect(res.headers.get('Access-Control-Allow-Methods')).toBe('GET, POST, OPTIONS');
@@ -34,6 +39,8 @@ describe('preflightResponse', () => {
       method: 'OPTIONS',
       headers: { 'Access-Control-Request-Headers': 'X-Custom' }
     });
-    expect(preflightResponse('*', req).headers.get('Access-Control-Allow-Headers')).toBe('X-Custom');
+    expect(
+      preflightResponse('*', req).headers.get('Access-Control-Allow-Headers')
+    ).toBe('X-Custom');
   });
 });

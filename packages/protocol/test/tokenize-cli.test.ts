@@ -32,7 +32,10 @@ describe('tokenizeCli', () => {
     { input: '    ', expected: [] },
     { input: 'a"b"c', expected: ['abc'] },
     { input: 'MSET k1 v1 k2 v2', expected: ['MSET', 'k1', 'v1', 'k2', 'v2'] },
-    { input: 'SET foo "with \\"quotes\\" inside"', expected: ['SET', 'foo', 'with "quotes" inside'] },
+    {
+      input: 'SET foo "with \\"quotes\\" inside"',
+      expected: ['SET', 'foo', 'with "quotes" inside']
+    },
     { input: 'key*', expected: ['key*'] },
     { input: 'KEYS user:*', expected: ['KEYS', 'user:*'] },
     { input: 'SET foo "unbalanced', expected: 'throw' },

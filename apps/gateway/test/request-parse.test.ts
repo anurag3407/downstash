@@ -12,7 +12,10 @@ describe('parseJsonBody', () => {
   });
   it('parses pipeline', async () => {
     const r = await parseJsonBody('[["GET","a"],["SET","b","c"]]', 'pipeline', 1000);
-    expect(r.ok && r.commands).toEqual([['GET', 'a'], ['SET', 'b', 'c']]);
+    expect(r.ok && r.commands).toEqual([
+      ['GET', 'a'],
+      ['SET', 'b', 'c']
+    ]);
   });
   it('rejects invalid JSON', async () => {
     const r = await parseJsonBody('not json', 'single', 1000);
@@ -32,27 +35,39 @@ describe('parseJsonBody', () => {
 
 describe('parsePathCommand', () => {
   it('builds argv from path segments', () => {
-    expect(parsePathCommand('GET', ['foo'], new URLSearchParams(), '')).toEqual(['GET', 'foo']);
-  });
-  it('decodes URI components in segments', () => {
-    expect(parsePathCommand('GET', ['a%20b'], new URLSearchParams(), '')).toEqual(['GET', 'a b']);
-  });
-  it('appends query params as name/value pairs', () => {
-    expect(parsePathCommand('SET', ['k', 'v'], new URLSearchParams('EX=10'), '')).toEqual([
-      'SET',
-      'k',
-      'v',
-      'EX',
-      '10'
+    expect(parsePathCommand('GET', ['foo'], new URLSearchParams(), '')).toEqual([
+      'GET',
+      'foo'
     ]);
   });
+  it('decodes URI components in segments', () => {
+    expect(parsePathCommand('GET', ['a%20b'], new URLSearchParams(), '')).toEqual([
+      'GET',
+      'a b'
+    ]);
+  });
+  it('appends query params as name/value pairs', () => {
+    expect(
+      parsePathCommand('SET', ['k', 'v'], new URLSearchParams('EX=10'), '')
+    ).toEqual(['SET', 'k', 'v', 'EX', '10']);
+  });
   it('appends flag-only params (empty value) as just the name', () => {
-    expect(parsePathCommand('ZADD', ['z'], new URLSearchParams('NX='), '')).toEqual(['ZADD', 'z', 'NX']);
+    expect(parsePathCommand('ZADD', ['z'], new URLSearchParams('NX='), '')).toEqual([
+      'ZADD',
+      'z',
+      'NX'
+    ]);
   });
   it('skips _token', () => {
-    expect(parsePathCommand('GET', ['k'], new URLSearchParams('_token=dsk_x'), '')).toEqual(['GET', 'k']);
+    expect(
+      parsePathCommand('GET', ['k'], new URLSearchParams('_token=dsk_x'), '')
+    ).toEqual(['GET', 'k']);
   });
   it('appends POST body as last arg', () => {
-    expect(parsePathCommand('SET', ['k'], new URLSearchParams(), 'value')).toEqual(['SET', 'k', 'value']);
+    expect(parsePathCommand('SET', ['k'], new URLSearchParams(), 'value')).toEqual([
+      'SET',
+      'k',
+      'value'
+    ]);
   });
 });

@@ -2,34 +2,6 @@
 -- Sorted-set commands (§7.8). ZSETs are stored as a JSONB object mapping
 -- member -> numeric score (JSONB number). Ordering is by score, then member
 -- in byte order (collate "C").
-create or replace function downstash.score_in_range(p_score numeric, p_min text, p_max text)
-returns boolean
-language plpgsql immutable set search_path = '' as $$
-declare
-  v_min numeric; v_max numeric; v_min_excl boolean; v_max_excl boolean; v_min_s text := p_min; v_max_s text := p_max;
-begin
-  if v_min_s = '-inf' then v_min := null; v_min_excl := false;
-  else
-    if left(v_min_s, 1) = '(' then v_min_excl := true; v_min_s := substr(v_min_s, 2); else v_min_excl := false; end if;
-    v_min := v_min_s::numeric;
-  end if;
-  if v_max_s = '+inf' then v_max := null; v_max_excl := false;
-  else
-    if left(v_max_s, 1) = '(' then v_max_excl := true; v_max_s := substr(v_max_s, 2); else v_max_excl := false; end if;
-    v_max := v_max_s::numeric;
-  end if;
-  if v_min is not null then
-    if v_min_excl and p_score <= v_min then return false; end if;
-    if not v_min_excl and p_score < v_min then return false; end if;
-  end if;
-  if v_max is not null then
-    if v_max_excl and p_score >= v_max then return false; end if;
-    if not v_max_excl and p_score > v_max then return false; end if;
-  end if;
-  return true;
-end;
-$$;
-comment on function downstash.score_in_range(numeric, text, text) is 'True if a score falls within [min, max] honoring ( exclusivity and +/-inf';
 
 -- 0-based rank of a member in a zset JSONB object (score asc, then member byte
 -- order). p_rev ranks from high to low.
@@ -216,66 +188,31 @@ begin
 end;
 $$;
 comment on function downstash.cmd_zcard(uuid, text[]) is 'ZCARD key';
-
-create or replace function downstash.cmd_zcount(p_db uuid, p_args text[])
-returns jsonb
-language plpgsql stable set search_path = '' as $$
+-- score_in_range: handles leading `(` (exclusive), `-inf`/`+inf`.
+create or replace function downstash.score_in_range(p_score double precision, p_min text, p_max text)
+returns boolean
+language plpgsql immutable set search_path = '' as $$
 declare
-  v_row downstash.kv;
+  v_min_ex boolean := p_min like '(%';
+  v_max_ex boolean := p_max like '(%';
+  v_min_v double precision;
+  v_max_v double precision;
 begin
-  v_row := downstash.read_live(p_db, p_args[1], 'zset');
-  if v_row.key is null then return to_jsonb(0); end if;
-  return to_jsonb((select count(*) from jsonb_each(v_row.val) e(k, v)
-    where downstash.score_in_range((v #>> '{}')::numeric, p_args[2], p_args[3])));
+  v_min_v := downstash.to_float(case when v_min_ex then substring(p_min from 2) else p_min end, true, 'ERR min or max is not a float');
+  v_max_v := downstash.to_float(case when v_max_ex then substring(p_max from 2) else p_max end, true, 'ERR min or max is not a float');
+  if v_min_ex then
+    if p_score <= v_min_v then return false; end if;
+  else
+    if p_score < v_min_v then return false; end if;
+  end if;
+  if v_max_ex then
+    if p_score >= v_max_v then return false; end if;
+  else
+    if p_score > v_max_v then return false; end if;
+  end if;
+  return true;
 end;
 $$;
-comment on function downstash.cmd_zcount(uuid, text[]) is 'ZCOUNT key min max';
-
-create or replace function downstash.cmd_zrank(p_db uuid, p_args text[], p_rev boolean default false)
-returns jsonb
-language plpgsql stable set search_path = '' as $$
-declare
-  v_row downstash.kv;
-begin
-  v_row := downstash.read_live(p_db, p_args[1], 'zset');
-  if v_row.key is null or not (v_row.val ? p_args[2]) then return 'null'::jsonb; end if;
-  return to_jsonb(downstash.zset_rank_of(v_row.val, p_args[2], p_rev) - 1);
-end;
-$$;
-comment on function downstash.cmd_zrank(uuid, text[], boolean) is 'ZRANK/ZREVRANK key member';
-
-create or replace function downstash.cmd_zremrangebyscore(p_db uuid, p_args text[])
-returns jsonb
-language plpgsql volatile set search_path = '' as $$
-declare
-  v_row downstash.kv;
-  v_val jsonb;
-  v_removed int := 0;
-  v_k text;
-begin
-  v_row := downstash.lock_live(p_db, p_args[1], 'zset');
-  if v_row.key is null then return to_jsonb(0); end if;
-  v_val := v_row.val;
-  for v_k in select key from jsonb_each(v_val) loop
-    if downstash.score_in_range((v_val ->> v_k)::numeric, p_args[2], p_args[3]) then
-      v_removed := v_removed + 1; v_val := v_val - v_k;
-    end if;
-  end loop;
-  if v_val = '{}'::jsonb then perform downstash.del_key(p_db, p_args[1]); else perform downstash.set_val(p_db, p_args[1], v_val); end if;
-  return to_jsonb(v_removed);
-end;
-$$;
-comment on function downstash.cmd_zremrangebyscore(uuid, text[]) is 'ZREMRANGEBYSCORE key min max';
-
-
-create or replace function downstash.cmd_zrevrank(p_db uuid, p_args text[])
-returns jsonb
-language plpgsql stable set search_path = '' as $$
-begin
-  return downstash.cmd_zrank(p_db, p_args, true);
-end;
-$$;
-comment on function downstash.cmd_zrevrank(uuid, text[]) is 'ZREVRANK key member';
 
 -- ZRANGE key start stop [BYSCORE] [REV] [LIMIT off cnt] [WITHSCORES]
 create or replace function downstash.cmd_zrange(p_db uuid, p_args text[])
@@ -292,7 +229,7 @@ declare
   v_cnt int := 0;
   i int := 4;
   v_out jsonb := '[]'::jsonb;
-  v_rows record;
+  v_rec record;
   v_kept int := 0;
   v_len int;
 begin
@@ -301,30 +238,41 @@ begin
     elsif p_args[i] = 'REV' then v_rev := true;
     elsif p_args[i] = 'WITHSCORES' then v_withscores := true;
     elsif p_args[i] = 'BYLEX' then perform downstash.raise_err('ERR Downstash: BYLEX is not supported');
-    elsif p_args[i] = 'LIMIT' then
-      v_limit := true; v_off := p_args[i+1]::int; v_cnt := p_args[i+2]::int; i := i + 2;
+    elsif p_args[i] = 'LIMIT' then v_limit := true; v_off := p_args[i+1]::int; v_cnt := p_args[i+2]::int; i := i + 2;
     end if;
     i := i + 1;
   end loop;
-
   v_row := downstash.read_live(p_db, p_args[1], 'zset');
   if v_row.key is null then return '[]'::jsonb; end if;
   v_len := (select count(*) from jsonb_each(v_row.val));
-
   if v_byscore then
-    for v_rows in
-      select key as m, (value #>> '{}')::numeric as s from jsonb_each(v_row.val) e(key, value)
-      where downstash.score_in_range((value #>> '{}')::numeric, p_args[2], p_args[3])
-      order by (case when v_rev then -1 else 1 end) * (value #>> '{}')::numeric,
-               case when v_rev then -1 else 1 end * length(key), key
-    loop
-      exit when v_limit and v_cnt >= 0 and v_kept >= v_off + v_cnt;
-      if (not v_limit) or (v_kept >= v_off) then
-        v_out := v_out || to_jsonb(v_rows.m);
-        if v_withscores then v_out := v_out || to_jsonb(downstash.fmt_float(v_rows.s)); end if;
-      end if;
-      v_kept := v_kept + 1;
-    end loop;
+    if v_rev then
+      for v_rec in
+        select key as m, (value #>> '{}')::numeric as s from jsonb_each(v_row.val) e(key, value)
+        where downstash.score_in_range((value #>> '{}')::double precision, p_args[3], p_args[2])
+        order by (value #>> '{}')::numeric desc, key desc
+      loop
+        exit when v_limit and v_cnt >= 0 and v_kept >= v_off + v_cnt;
+        if (not v_limit) or (v_kept >= v_off) then
+          v_out := v_out || to_jsonb(v_rec.m);
+          if v_withscores then v_out := v_out || to_jsonb(downstash.fmt_float(v_rec.s)); end if;
+        end if;
+        v_kept := v_kept + 1;
+      end loop;
+    else
+      for v_rec in
+        select key as m, (value #>> '{}')::numeric as s from jsonb_each(v_row.val) e(key, value)
+        where downstash.score_in_range((value #>> '{}')::double precision, p_args[2], p_args[3])
+        order by (value #>> '{}')::numeric asc, key
+      loop
+        exit when v_limit and v_cnt >= 0 and v_kept >= v_off + v_cnt;
+        if (not v_limit) or (v_kept >= v_off) then
+          v_out := v_out || to_jsonb(v_rec.m);
+          if v_withscores then v_out := v_out || to_jsonb(downstash.fmt_float(v_rec.s)); end if;
+        end if;
+        v_kept := v_kept + 1;
+      end loop;
+    end if;
   else
     declare
       v_start int := p_args[2]::int;
@@ -336,46 +284,35 @@ begin
       if v_stop < 0 then v_stop := v_len + v_stop; end if;
       if v_start < 0 then v_start := 0; end if;
       if v_stop >= v_len then v_stop := v_len - 1; end if;
-      for v_rows in
+      for v_rec in
         execute format(
           'select key as m, (value #>> %L)::numeric as s, row_number() over (order by (value #>> %L)::numeric %s, key %s) as r from jsonb_each($1) e(key, value) order by r',
           '{}', '{}', v_ord, v_ord)
         using v_row.val
       loop
-        v_rank := v_rows.r - 1;
+        v_rank := v_rec.r - 1;
         if v_rank >= v_start and v_rank <= v_stop then
-          v_out := v_out || to_jsonb(v_rows.m);
-          if v_withscores then v_out := v_out || to_jsonb(downstash.fmt_float(v_rows.s)); end if;
+          v_out := v_out || to_jsonb(v_rec.m);
+          if v_withscores then v_out := v_out || to_jsonb(downstash.fmt_float(v_rec.s)); end if;
         end if;
       end loop;
     end;
   end if;
-
   return v_out;
 end;
 $$;
 comment on function downstash.cmd_zrange(uuid, text[]) is 'ZRANGE key start stop [BYSCORE] [REV] [LIMIT off cnt] [WITHSCORES]';
 
-
-
+-- ZCOUNT key min max
 create or replace function downstash.cmd_zcount(p_db uuid, p_args text[])
 returns jsonb
 language plpgsql stable set search_path = '' as $$
-declare
-  v_row downstash.kv;
-  v_lo numeric;
-  v_hi numeric;
-  v_out int := 0;
-  v_s numeric;
+declare v_row downstash.kv;
 begin
   v_row := downstash.read_live(p_db, p_args[1], 'zset');
   if v_row.key is null then return to_jsonb(0); end if;
-  v_lo := downstash.to_float(p_args[2], true, 'ERR min or max is not a float');
-  v_hi := downstash.to_float(p_args[3], true, 'ERR min or max is not a float');
-  for v_s in select (jsonb_each_text(v_row.val)).value::numeric loop
-    if v_s >= v_lo and v_s <= v_hi then v_out := v_out + 1; end if;
-  end loop;
-  return to_jsonb(v_out);
+  return to_jsonb((select count(*) from jsonb_each(v_row.val) e(key, value)
+    where downstash.score_in_range((value #>> '{}')::double precision, p_args[2], p_args[3])));
 end;
 $$;
 comment on function downstash.cmd_zcount(uuid, text[]) is 'ZCOUNT key min max';
@@ -383,19 +320,14 @@ comment on function downstash.cmd_zcount(uuid, text[]) is 'ZCOUNT key min max';
 create or replace function downstash.cmd_zrank(p_db uuid, p_args text[], p_rev boolean default false)
 returns jsonb
 language plpgsql stable set search_path = '' as $$
-declare
-  v_row downstash.kv;
-  v_rows text[];
-  v_idx int;
+declare v_row downstash.kv; v_rows text[]; v_idx int;
 begin
   v_row := downstash.read_live(p_db, p_args[1], 'zset');
   if v_row.key is null or not (v_row.val ? p_args[2]) then return 'null'::jsonb; end if;
   if p_rev then
-    select array_agg(m order by ((v_row.val ->> m)::numeric) desc, m desc) into v_rows
-      from jsonb_object_keys(v_row.val) m;
+    select array_agg(m order by ((v_row.val ->> m)::numeric) desc, m desc) into v_rows from jsonb_object_keys(v_row.val) m;
   else
-    select array_agg(m order by ((v_row.val ->> m)::numeric) asc, m) into v_rows
-      from jsonb_object_keys(v_row.val) m;
+    select array_agg(m order by ((v_row.val ->> m)::numeric) asc, m) into v_rows from jsonb_object_keys(v_row.val) m;
   end if;
   v_idx := array_position(v_rows, p_args[2]);
   return to_jsonb(v_idx - 1);
@@ -404,36 +336,21 @@ $$;
 comment on function downstash.cmd_zrank(uuid, text[], boolean) is 'ZRANK key member (rev flag)';
 
 create or replace function downstash.cmd_zrevrank(p_db uuid, p_args text[])
-returns jsonb
-language plpgsql stable set search_path = '' as $$
-begin
-  return downstash.cmd_zrank(p_db, p_args, true);
-end;
+returns jsonb language plpgsql stable set search_path = '' as $$
+begin return downstash.cmd_zrank(p_db, p_args, true); end;
 $$;
 comment on function downstash.cmd_zrevrank(uuid, text[]) is 'ZREVRANK key member';
 
 create or replace function downstash.cmd_zremrangebyscore(p_db uuid, p_args text[])
-returns jsonb
-language plpgsql volatile set search_path = '' as $$
-declare
-  v_row downstash.kv;
-  v_val jsonb;
-  v_lo numeric;
-  v_hi numeric;
-  v_removed int := 0;
-  v_m text;
-  v_s numeric;
+returns jsonb language plpgsql volatile set search_path = '' as $$
+declare v_row downstash.kv; v_val jsonb; v_removed int := 0; v_m text;
 begin
   v_row := downstash.lock_live(p_db, p_args[1], 'zset');
   if v_row.key is null then return to_jsonb(0); end if;
-  v_lo := downstash.to_float(p_args[2], true, 'ERR min or max is not a float');
-  v_hi := downstash.to_float(p_args[3], true, 'ERR min or max is not a float');
   v_val := v_row.val;
   for v_m in select jsonb_object_keys(v_val) loop
-    v_s := (v_val ->> v_m)::numeric;
-    if v_s >= v_lo and v_s <= v_hi then
-      v_val := v_val - v_m;
-      v_removed := v_removed + 1;
+    if downstash.score_in_range((v_val ->> v_m)::double precision, p_args[2], p_args[3]) then
+      v_val := v_val - v_m; v_removed := v_removed + 1;
     end if;
   end loop;
   if v_val = '{}'::jsonb then perform downstash.del_key(p_db, p_args[1]); else perform downstash.set_val(p_db, p_args[1], v_val); end if;
@@ -443,23 +360,13 @@ $$;
 comment on function downstash.cmd_zremrangebyscore(uuid, text[]) is 'ZREMRANGEBYSCORE key min max';
 
 create or replace function downstash.cmd_zremrangebyrank(p_db uuid, p_args text[])
-returns jsonb
-language plpgsql volatile set search_path = '' as $$
-declare
-  v_row downstash.kv;
-  v_val jsonb;
-  v_rows text[];
-  v_len int;
-  v_start int;
-  v_stop int;
-  v_removed int := 0;
-  v_m text;
+returns jsonb language plpgsql volatile set search_path = '' as $$
+declare v_row downstash.kv; v_val jsonb; v_rows text[]; v_len int; v_start int; v_stop int; v_removed int := 0; v_m text;
 begin
   v_row := downstash.lock_live(p_db, p_args[1], 'zset');
   if v_row.key is null then return to_jsonb(0); end if;
   v_val := v_row.val;
-  select array_agg(m order by ((v_val ->> m)::numeric) asc, m) into v_rows
-    from jsonb_object_keys(v_val) m;
+  select array_agg(m order by ((v_val ->> m)::numeric) asc, m) into v_rows from jsonb_object_keys(v_val) m;
   v_start := downstash.to_int(p_args[2], 'ERR value is not an integer or out of range');
   v_stop := downstash.to_int(p_args[3], 'ERR value is not an integer or out of range');
   v_len := array_length(v_rows, 1);
@@ -468,20 +375,18 @@ begin
   v_stop := least(v_stop, v_len - 1);
   if v_start > v_stop then return to_jsonb(0); end if;
   for v_m in select unnest(v_rows[v_start + 1 : v_stop + 1]) loop
-    v_val := v_val - v_m;
-    v_removed := v_removed + 1;
+    v_val := v_val - v_m; v_removed := v_removed + 1;
   end loop;
   if v_val = '{}'::jsonb then perform downstash.del_key(p_db, p_args[1]); else perform downstash.set_val(p_db, p_args[1], v_val); end if;
   return to_jsonb(v_removed);
 end;
 $$;
 comment on function downstash.cmd_zremrangebyrank(uuid, text[]) is 'ZREMRANGEBYRANK key start stop';
-
 insert into downstash.command_registry (name, handler, arity, flags, first_key, last_key, key_step, family, summary)
 values
   ('ZADD',            'downstash.cmd_zadd',            -4, '{write}', 1, 1, 1, 'zsets', 'Add one or more members to a sorted set'),
   ('ZINCRBY',         'downstash.cmd_zincrby',         4, '{write}', 1, 1, 1, 'zsets', 'Increment the score of a member in a sorted set'),
-  ('ZSCORE',          'downstash.cmd_zscore',          3, '{read,cacheable}', 1, 1, 1, 'zsets', 'Get the score of a member in a sorted set'),
+  ('ZSCORE',          'downstash.cmd_zscore',          3, '{cacheable,read}', 1, 1, 1, 'zsets', 'Get the score of a member in a sorted set'),
   ('ZMSCORE',         'downstash.cmd_zmscore',        -3, '{read}', 1, 1, 1, 'zsets', 'Get the score of one or more members in a sorted set'),
   ('ZREM',            'downstash.cmd_zrem',           -3, '{write}', 1, 1, 1, 'zsets', 'Remove one or more members from a sorted set'),
   ('ZCARD',           'downstash.cmd_zcard',           2, '{read}',  1, 1, 1, 'zsets', 'Get the number of members in a sorted set'),
@@ -491,4 +396,5 @@ values
   ('ZREVRANK',        'downstash.cmd_zrevrank',        3, '{read}',  1, 1, 1, 'zsets', 'Determine the index of a member in a sorted set, ordered from high to low'),
   ('ZREMRANGEBYSCORE','downstash.cmd_zremrangebyscore', 4, '{write}', 1, 1, 1, 'zsets', 'Remove all members in a sorted set within the given scores'),
   ('ZREMRANGEBYRANK', 'downstash.cmd_zremrangebyrank', 4, '{write}', 1, 1, 1, 'zsets', 'Remove all members in a sorted set within the given indexes')
+
 on conflict (name) do update set handler = excluded.handler, arity = excluded.arity, flags = excluded.flags, first_key = excluded.first_key, last_key = excluded.last_key, key_step = excluded.key_step, family = excluded.family, summary = excluded.summary;

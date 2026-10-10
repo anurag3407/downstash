@@ -63,7 +63,10 @@ export class PostgrestStorage implements Storage {
       let json: Record<string, unknown> | null = null;
       try {
         const parsed = text ? JSON.parse(text) : null;
-        json = parsed && typeof parsed === 'object' ? (parsed as Record<string, unknown>) : null;
+        json =
+          parsed && typeof parsed === 'object'
+            ? (parsed as Record<string, unknown>)
+            : null;
       } catch {
         json = null;
       }
@@ -73,8 +76,7 @@ export class PostgrestStorage implements Storage {
         const db = json?.db !== undefined && json.db !== null ? String(json.db) : '';
         const readonly = Boolean(json?.readonly);
         const l1TtlMs = Number(json?.l1TtlMs ?? 0);
-        const principal =
-          db !== '' ? { dbId: db, readonly, l1TtlMs } : undefined;
+        const principal = db !== '' ? { dbId: db, readonly, l1TtlMs } : undefined;
         const base: RunResponse = {
           ok: true,
           status: 200,
@@ -97,7 +99,8 @@ export class PostgrestStorage implements Storage {
 
       // Non-retryable 4xx → treat as an error reply, not unavailable.
       if (res.status >= 400 && res.status < 500) {
-        const errText = typeof json?.error === 'string' ? json.error : 'ERR Downstash: bad request';
+        const errText =
+          typeof json?.error === 'string' ? json.error : 'ERR Downstash: bad request';
         return { ok: false, status: res.status, error: errText };
       }
 
@@ -111,7 +114,10 @@ export class PostgrestStorage implements Storage {
 
   async ping(): Promise<PingResponse> {
     try {
-      const res = await this.fetch(`${this.opts.url}/rest/v1/rpc/downstash_gw_ping`, '{}');
+      const res = await this.fetch(
+        `${this.opts.url}/rest/v1/rpc/downstash_gw_ping`,
+        '{}'
+      );
       return { ok: res.ok, status: res.status };
     } catch {
       return { ok: false, status: 503 };

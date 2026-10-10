@@ -6,7 +6,10 @@ import { describe, expect, it } from 'vitest';
 import { formatCli } from '../src/format-cli.ts';
 
 describe('formatCli', () => {
-  const cases: Array<{ envelope: { result: unknown } | { error: string }; expected: string }> = [
+  const cases: Array<{
+    envelope: { result: unknown } | { error: string };
+    expected: string;
+  }> = [
     { envelope: { error: 'ERR no such key' }, expected: '(error) ERR no such key' },
     { envelope: { result: null }, expected: '(nil)' },
     { envelope: { result: 42 }, expected: '(integer) 42' },
@@ -20,9 +23,15 @@ describe('formatCli', () => {
     { envelope: { result: 'with "quotes"' }, expected: '"with \\"quotes\\""' },
     { envelope: { result: [] }, expected: '(empty array)' },
     { envelope: { result: ['a', 'b'] }, expected: '1) "a"\n2) "b"' },
-    { envelope: { result: [1, 2, 3] }, expected: '1) (integer) 1\n2) (integer) 2\n3) (integer) 3' },
+    {
+      envelope: { result: [1, 2, 3] },
+      expected: '1) (integer) 1\n2) (integer) 2\n3) (integer) 3'
+    },
     { envelope: { result: ['a', null, 'c'] }, expected: '1) "a"\n2) (nil)\n3) "c"' },
-    { envelope: { result: [['a', 'b'], ['c']] }, expected: '1) 1) "a"\n   2) "b"\n2) 1) "c"' },
+    {
+      envelope: { result: [['a', 'b'], ['c']] },
+      expected: '1) 1) "a"\n   2) "b"\n2) 1) "c"'
+    },
     { envelope: { result: [['x']] }, expected: '1) 1) "x"' },
     {
       envelope: { result: ['f1', 'v1', 'f2', 'v2'] },

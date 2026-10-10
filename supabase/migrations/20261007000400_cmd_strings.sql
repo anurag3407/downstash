@@ -369,14 +369,14 @@ comment on function downstash.cmd_strlen(uuid, text[]) is 'STRLEN key';
 -- Register string commands (§7.8).
 -- ---------------------------------------------------------------------------
 insert into downstash.command_registry (name, handler, arity, flags, first_key, last_key, key_step, family, summary) values
-  ('GET',  'downstash.cmd_get',  2,  '{read,cacheable}', 1, 1, 1, 'strings', 'Get the value of a key'),
+  ('GET',  'downstash.cmd_get',  2,  '{cacheable,read}', 1, 1, 1, 'strings', 'Get the value of a key'),
   ('SET',  'downstash.cmd_set',  -3, '{write}',          1, 1, 1, 'strings', 'Set the string value of a key'),
   ('SETNX','downstash.cmd_setnx', 3, '{write}',          1, 1, 1, 'strings', 'Set the value of a key, only if the key does not exist'),
   ('SETEX','downstash.cmd_setex', 4, '{write}',          1, 1, 1, 'strings', 'Set the value and expiration of a key'),
   ('PSETEX','downstash.cmd_psetex', 4, '{write}',        1, 1, 1, 'strings', 'Set the value and time to live in milliseconds of a key'),
   ('GETSET','downstash.cmd_getset', 3, '{write}',        1, 1, 1, 'strings', 'Set the string value of a key and return its old value'),
   ('GETDEL','downstash.cmd_getdel', 2, '{write}',        1, 1, 1, 'strings', 'Get the value of a key and delete it'),
-  ('MGET', 'downstash.cmd_mget', -2, '{read,cacheable}', 1, -1, 1, 'strings', 'Get the values of all the given keys'),
+  ('MGET', 'downstash.cmd_mget', -2, '{cacheable,read}', 1, -1, 1, 'strings', 'Get the values of all the given keys'),
   ('MSET', 'downstash.cmd_mset', -3, '{write}',          1, -1, 2, 'strings', 'Set multiple keys to multiple values'),
   ('MSETNX','downstash.cmd_msetnx', -3, '{write}',       1, -1, 2, 'strings', 'Set multiple keys to multiple values, only if none exist'),
   ('INCR', 'downstash.cmd_incr', 2,  '{write}',          1, 1, 1, 'strings', 'Increment the integer value of a key by one'),

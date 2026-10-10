@@ -16,10 +16,18 @@ describe('failover events + sticky', () => {
       { status: 200, body: { result: enc('a') } }
     ]);
     const onFailover = vi.fn();
-    const c = new Downstash(baseConfig({ fetch: fn as unknown as typeof fetch, fallback: { supabaseUrl: SB, supabaseKey: 'k' }, onFailover }));
+    const c = new Downstash(
+      baseConfig({
+        fetch: fn as unknown as typeof fetch,
+        fallback: { supabaseUrl: SB, supabaseKey: 'k' },
+        onFailover
+      })
+    );
     await c.get('foo');
     expect(onFailover).toHaveBeenCalledTimes(1);
-    expect(onFailover).toHaveBeenCalledWith(expect.objectContaining({ reason: 'server_error', status: 503 }));
+    expect(onFailover).toHaveBeenCalledWith(
+      expect.objectContaining({ reason: 'server_error', status: 503 })
+    );
   });
 
   it('uses RPC directly during the sticky window', async () => {
@@ -28,7 +36,12 @@ describe('failover events + sticky', () => {
       { status: 200, body: { result: enc('a') } },
       { status: 200, body: { result: enc('b') } }
     ]);
-    const c = new Downstash(baseConfig({ fetch: fn as unknown as typeof fetch, fallback: { supabaseUrl: SB, supabaseKey: 'k' } }));
+    const c = new Downstash(
+      baseConfig({
+        fetch: fn as unknown as typeof fetch,
+        fallback: { supabaseUrl: SB, supabaseKey: 'k' }
+      })
+    );
     await c.get('foo');
     clock.advance(1000);
     await c.get('foo');
@@ -42,7 +55,13 @@ describe('failover events + sticky', () => {
       { status: 200, body: { result: enc('a') } },
       { status: 200, body: { result: enc('b') } }
     ]);
-    const c = new Downstash(baseConfig({ fetch: fn as unknown as typeof fetch, fallback: { supabaseUrl: SB, supabaseKey: 'k' }, stickyFailoverMs: 5000 }));
+    const c = new Downstash(
+      baseConfig({
+        fetch: fn as unknown as typeof fetch,
+        fallback: { supabaseUrl: SB, supabaseKey: 'k' },
+        stickyFailoverMs: 5000
+      })
+    );
     await c.get('foo');
     clock.advance(6000);
     await c.get('foo');
@@ -59,12 +78,23 @@ describe('timeout handling', () => {
         e.name = 'AbortError';
         throw e;
       }
-      return { status: 200, text: async () => JSON.stringify({ result: enc('v') }) } as unknown as Response;
+      return {
+        status: 200,
+        text: async () => JSON.stringify({ result: enc('v') })
+      } as unknown as Response;
     });
     const onFailover = vi.fn();
-    const c = new Downstash(baseConfig({ fetch: fn as unknown as typeof fetch, fallback: { supabaseUrl: SB, supabaseKey: 'k' }, onFailover }));
+    const c = new Downstash(
+      baseConfig({
+        fetch: fn as unknown as typeof fetch,
+        fallback: { supabaseUrl: SB, supabaseKey: 'k' },
+        onFailover
+      })
+    );
     expect(await c.get('foo')).toBe('v');
-    expect(onFailover).toHaveBeenCalledWith(expect.objectContaining({ reason: 'timeout' }));
+    expect(onFailover).toHaveBeenCalledWith(
+      expect.objectContaining({ reason: 'timeout' })
+    );
   });
 
   it('does NOT fail over on timeout when failoverOnTimeout=false', async () => {
@@ -73,7 +103,13 @@ describe('timeout handling', () => {
       e.name = 'AbortError';
       throw e;
     });
-    const c = new Downstash(baseConfig({ fetch: fn as unknown as typeof fetch, fallback: { supabaseUrl: SB, supabaseKey: 'k' }, failoverOnTimeout: false }));
+    const c = new Downstash(
+      baseConfig({
+        fetch: fn as unknown as typeof fetch,
+        fallback: { supabaseUrl: SB, supabaseKey: 'k' },
+        failoverOnTimeout: false
+      })
+    );
     await expect(c.get('foo')).rejects.toMatchObject({ message: 'Request timed out' });
   });
 });
@@ -87,10 +123,16 @@ describe('RPC headers (eyJ rule)', () => {
     ]);
     const wrapped = vi.fn(async (url: string, init?: RequestInit) => {
       const r = await fn(url, init);
-      if (String(url).includes('/rest/v1/rpc/')) headers = (init?.headers as Record<string, string>) ?? {};
+      if (String(url).includes('/rest/v1/rpc/'))
+        headers = (init?.headers as Record<string, string>) ?? {};
       return r;
     });
-    const c = new Downstash(baseConfig({ fetch: wrapped as unknown as typeof fetch, fallback: { supabaseUrl: SB, supabaseKey: 'eyJpublishable' } }));
+    const c = new Downstash(
+      baseConfig({
+        fetch: wrapped as unknown as typeof fetch,
+        fallback: { supabaseUrl: SB, supabaseKey: 'eyJpublishable' }
+      })
+    );
     await c.get('foo');
     expect(headers.Authorization).toBe('Bearer eyJpublishable');
   });
@@ -103,10 +145,16 @@ describe('RPC headers (eyJ rule)', () => {
     ]);
     const wrapped = vi.fn(async (url: string, init?: RequestInit) => {
       const r = await fn(url, init);
-      if (String(url).includes('/rest/v1/rpc/')) headers = (init?.headers as Record<string, string>) ?? {};
+      if (String(url).includes('/rest/v1/rpc/'))
+        headers = (init?.headers as Record<string, string>) ?? {};
       return r;
     });
-    const c = new Downstash(baseConfig({ fetch: wrapped as unknown as typeof fetch, fallback: { supabaseUrl: SB, supabaseKey: 'sb_publishable_plain' } }));
+    const c = new Downstash(
+      baseConfig({
+        fetch: wrapped as unknown as typeof fetch,
+        fallback: { supabaseUrl: SB, supabaseKey: 'sb_publishable_plain' }
+      })
+    );
     await c.get('foo');
     expect(headers.Authorization).toBeUndefined();
     expect(headers.apikey).toBe('sb_publishable_plain');

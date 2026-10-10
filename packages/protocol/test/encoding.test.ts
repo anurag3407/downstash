@@ -45,7 +45,10 @@ describe('encodeResult', () => {
     expect(encodeResult(['a', 1, null])).toEqual([utf8ToBase64('a'), 1, null]);
   });
   it('recurses into nested arrays', () => {
-    expect(encodeResult([['a'], ['b', 'c']])).toEqual([[utf8ToBase64('a')], [utf8ToBase64('b'), utf8ToBase64('c')]]);
+    expect(encodeResult([['a'], ['b', 'c']])).toEqual([
+      [utf8ToBase64('a')],
+      [utf8ToBase64('b'), utf8ToBase64('c')]
+    ]);
   });
 });
 

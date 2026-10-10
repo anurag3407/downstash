@@ -3,19 +3,16 @@
  * End-to-end tests through the pure Hono app with a fake storage. No network.
  */
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import {
-  FakeStorage,
-  VALID,
-  makeApp,
-  okRun
-} from './helpers.ts';
+import { FakeStorage, VALID, makeApp, okRun } from './helpers.ts';
 import type { App } from '../src/app.ts';
 
 let app: App;
 let storage: FakeStorage;
 
 beforeEach(() => {
-  storage = new FakeStorage(() => okRun({ result: 'PONG' }, { dbId: 'db-1', readonly: false, l1TtlMs: 0 }));
+  storage = new FakeStorage(() =>
+    okRun({ result: 'PONG' }, { dbId: 'db-1', readonly: false, l1TtlMs: 0 })
+  );
   app = makeApp(storage);
 });
 afterEach(() => {
@@ -71,7 +68,11 @@ describe('POST / single', () => {
   });
 
   it('maps a 400 storage failure to a 400 with the error body', async () => {
-    storage = new FakeStorage(() => ({ ok: false, status: 400, error: 'WRONGTYPE ...' }));
+    storage = new FakeStorage(() => ({
+      ok: false,
+      status: 400,
+      error: 'WRONGTYPE ...'
+    }));
     app = makeApp(storage);
     const res = await post(['GET', 'foo']);
     expect(res.status).toBe(400);
@@ -86,7 +87,10 @@ describe('POST /pipeline and /multi-exec', () => {
     const res = await app.hono.request('/pipeline', {
       method: 'POST',
       headers: { Authorization: `Bearer ${VALID}` },
-      body: JSON.stringify([['GET', 'a'], ['GET', 'b']])
+      body: JSON.stringify([
+        ['GET', 'a'],
+        ['GET', 'b']
+      ])
     });
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual([{ result: 'a' }, { result: 'b' }]);
@@ -110,7 +114,9 @@ describe('POST /pipeline and /multi-exec', () => {
 
 describe('path-style commands', () => {
   it('GET /get/foo builds argv', async () => {
-    await app.hono.request('/get/foo', { headers: { Authorization: `Bearer ${VALID}` } });
+    await app.hono.request('/get/foo', {
+      headers: { Authorization: `Bearer ${VALID}` }
+    });
     expect(storage.calls[0]?.commands).toEqual([['GET', 'foo']]);
   });
 
@@ -142,11 +148,16 @@ describe('health', () => {
 
 describe('routing / errors', () => {
   it('404 for unknown routes', async () => {
-    const res = await app.hono.request('/', { headers: { Authorization: `Bearer ${VALID}` } });
+    const res = await app.hono.request('/', {
+      headers: { Authorization: `Bearer ${VALID}` }
+    });
     expect(res.status).toBe(404);
   });
   it('OPTIONS preflight returns 204 with CORS', async () => {
-    const res = await app.hono.request('/', { method: 'OPTIONS', headers: { Origin: 'https://x.com' } });
+    const res = await app.hono.request('/', {
+      method: 'OPTIONS',
+      headers: { Origin: 'https://x.com' }
+    });
     expect(res.status).toBe(204);
     expect(res.headers.get('Access-Control-Allow-Origin')).toBe('*');
   });

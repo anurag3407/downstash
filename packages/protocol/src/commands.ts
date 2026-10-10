@@ -24,7 +24,9 @@ const ALL: readonly CommandSpec[] = [
   ...SCRIPTING
 ];
 
-const sorted = [...ALL].sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
+const sorted = [...ALL].sort((a, b) =>
+  a.name < b.name ? -1 : a.name > b.name ? 1 : 0
+);
 
 export const COMMANDS: Readonly<Record<string, CommandSpec>> = Object.freeze(
   Object.fromEntries(
@@ -84,7 +86,10 @@ export function precheck(argv: readonly string[]): PrecheckResult {
   const name = argv[0] ?? '';
   const spec = getCommand(name);
   if (!spec) {
-    return { ok: false, error: formatError(ERRORS.UNKNOWN_COMMAND, name, argsPreview(argv.slice(1))) };
+    return {
+      ok: false,
+      error: formatError(ERRORS.UNKNOWN_COMMAND, name, argsPreview(argv.slice(1)))
+    };
   }
   const n = argv.length;
   const arityOk = spec.arity > 0 ? n === spec.arity : n >= -spec.arity;

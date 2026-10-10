@@ -30,7 +30,11 @@ export class FakeStorage implements Storage {
   private handler: (req: RunRequest) => Promise<RunResponse | RunFailure>;
   pingOk = true;
 
-  constructor(handler?: (req: RunRequest) => Promise<RunResponse | RunFailure> | RunResponse | RunFailure) {
+  constructor(
+    handler?: (
+      req: RunRequest
+    ) => Promise<RunResponse | RunFailure> | RunResponse | RunFailure
+  ) {
     this.handler = (req) =>
       Promise.resolve(
         handler
@@ -72,7 +76,11 @@ export function makeConfig(over: Partial<Env> = {}): GatewayConfig {
   }) as GatewayConfig;
 }
 
-export function makeApp(storage: Storage, over: Partial<Env> = {}, now?: () => number): App {
+export function makeApp(
+  storage: Storage,
+  over: Partial<Env> = {},
+  now?: () => number
+): App {
   const clock = now ?? (() => t);
   return createApp({
     storage,

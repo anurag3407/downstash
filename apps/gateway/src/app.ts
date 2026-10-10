@@ -21,7 +21,10 @@ export interface AppDeps {
   config: GatewayConfig;
   now: () => number;
   /** Injected for tests; defaults to crypto.subtle via protocol. */
-  logger?: { info: (obj: unknown, msg?: string) => void; error: (obj: unknown, msg?: string) => void };
+  logger?: {
+    info: (obj: unknown, msg?: string) => void;
+    error: (obj: unknown, msg?: string) => void;
+  };
 }
 
 export interface App {
@@ -54,12 +57,20 @@ export function createApp(deps: AppDeps): App {
     if (err instanceof StorageUnavailableError) {
       return respondError(503, 'ERR Downstash: storage unavailable', corsFor(c));
     }
-    logger.error({ msg: 'unhandled', error: err instanceof Error ? err.message : String(err) });
+    logger.error({
+      msg: 'unhandled',
+      error: err instanceof Error ? err.message : String(err)
+    });
     return respondError(500, 'ERR Downstash: internal error', corsFor(c));
   });
 
-  function corsFor(c: { req: { header(name: string): string | undefined } }): string | null {
-    return resolveCorsOrigin(deps.config.allowedOrigins, c.req.header('Origin') ?? null);
+  function corsFor(c: {
+    req: { header(name: string): string | undefined };
+  }): string | null {
+    return resolveCorsOrigin(
+      deps.config.allowedOrigins,
+      c.req.header('Origin') ?? null
+    );
   }
 
   // CORS preflight.

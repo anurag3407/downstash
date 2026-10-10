@@ -3,7 +3,12 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { hashToken, renderSeedSql, sqlString, type TokenRow } from '../src/generator.ts';
+import {
+  hashToken,
+  renderSeedSql,
+  sqlString,
+  type TokenRow
+} from '../src/generator.ts';
 
 describe('hashToken', () => {
   it('produces a 64-char sha256 hex digest', () => {

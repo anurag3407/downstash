@@ -20,7 +20,12 @@ import type { UsageBuffer } from '../core/usage-buffer.ts';
 import type { AuthResult } from '../core/auth.ts';
 import { parseJsonBody, parsePathCommand } from '../core/request-parse.ts';
 import { wantsBase64 } from '../core/encoding.ts';
-import { respondError, respondMany, respondSingle, type L1State } from '../core/respond.ts';
+import {
+  respondError,
+  respondMany,
+  respondSingle,
+  type L1State
+} from '../core/respond.ts';
 
 type CorsFor = (c: Context) => string | null;
 
@@ -40,21 +45,30 @@ export function registerCommandRoutes(app: Hono, deps: CommandRouteDeps): void {
   const { config, storage, authCache, l1, usage } = deps;
 
   function tooLarge(c: Context): Response {
-    return respondError(413, `ERR Downstash: request body exceeds ${config.maxRequestBytes} bytes`, deps.corsFor(c));
+    return respondError(
+      413,
+      `ERR Downstash: request body exceeds ${config.maxRequestBytes} bytes`,
+      deps.corsFor(c)
+    );
   }
 
-  async function readBody(c: Context): Promise<{ ok: true; text: string } | { ok: false; resp: Response }> {
+  async function readBody(
+    c: Context
+  ): Promise<{ ok: true; text: string } | { ok: false; resp: Response }> {
     const cl = c.req.header('Content-Length');
-    if (cl && Number.parseInt(cl, 10) > config.maxRequestBytes) return { ok: false, resp: tooLarge(c) };
+    if (cl && Number.parseInt(cl, 10) > config.maxRequestBytes)
+      return { ok: false, resp: tooLarge(c) };
     const text = await c.req.text();
-    if (new TextEncoder().encode(text).length > config.maxRequestBytes) return { ok: false, resp: tooLarge(c) };
+    if (new TextEncoder().encode(text).length > config.maxRequestBytes)
+      return { ok: false, resp: tooLarge(c) };
     return { ok: true, text };
   }
 
   async function authGate(c: Context): Promise<Response | null> {
     const token = deps.extractToken(c.req.raw, new URL(c.req.url));
     const auth = await deps.authenticate(token);
-    if (auth.kind === 'invalid') return respondError(401, 'Unauthorized', deps.corsFor(c));
+    if (auth.kind === 'invalid')
+      return respondError(401, 'Unauthorized', deps.corsFor(c));
     return null;
   }
 
@@ -69,13 +83,21 @@ export function registerCommandRoutes(app: Hono, deps: CommandRouteDeps): void {
   }
 
   /** Build a response, record its byte length into usage, and return it. */
-  async function finish(c: Context, dbId: string, build: () => Promise<Response>): Promise<Response> {
+  async function finish(
+    c: Context,
+    dbId: string,
+    build: () => Promise<Response>
+  ): Promise<Response> {
     const resp = await build();
     if (dbId) usage.addBytesOut(dbId, (await resp.clone().arrayBuffer()).byteLength);
     return resp;
   }
 
-  async function handle(c: Context, mode: RunMode, commands: string[][]): Promise<Response> {
+  async function handle(
+    c: Context,
+    mode: RunMode,
+    commands: string[][]
+  ): Promise<Response> {
     const cors = deps.corsFor(c);
     const base64 = wantsBase64(c.req.raw.headers);
     const url = new URL(c.req.url);
@@ -135,7 +157,11 @@ export function registerCommandRoutes(app: Hono, deps: CommandRouteDeps): void {
     const principal =
       res.principal ??
       (auth.kind === 'cached'
-        ? { dbId: auth.principal.dbId, readonly: auth.principal.readonly, l1TtlMs: l1Ttl }
+        ? {
+            dbId: auth.principal.dbId,
+            readonly: auth.principal.readonly,
+            l1TtlMs: l1Ttl
+          }
         : undefined);
     if (principal) authCache.setPositive(tokenHash, principal);
     if (isWriteRequest && principal) l1.invalidateDb(principal.dbId);
@@ -143,14 +169,24 @@ export function registerCommandRoutes(app: Hono, deps: CommandRouteDeps): void {
 
     if (single) {
       const envelope = (res.envelopes as ResultEnvelope) ?? { result: null };
-      if (l1State === 'MISS' && principal && principal.l1TtlMs > 0 && isCacheable(argv0) && 'result' in envelope) {
+      if (
+        l1State === 'MISS' &&
+        principal &&
+        principal.l1TtlMs > 0 &&
+        isCacheable(argv0) &&
+        'result' in envelope
+      ) {
         l1.set(principal.dbId, commands[0]!, envelope.result, principal.l1TtlMs);
       }
-      return finish(c, finalDb, async () => respondSingle(envelope, { cors, l1: l1State, base64 }));
+      return finish(c, finalDb, async () =>
+        respondSingle(envelope, { cors, l1: l1State, base64 })
+      );
     }
 
     const envelopes = (res.envelopes as ResultEnvelope[]) ?? [];
-    return finish(c, finalDb, async () => respondMany(envelopes, { cors, l1: l1State, base64 }));
+    return finish(c, finalDb, async () =>
+      respondMany(envelopes, { cors, l1: l1State, base64 })
+    );
   }
 
   async function pathHandler(c: Context): Promise<Response> {
@@ -160,7 +196,12 @@ export function registerCommandRoutes(app: Hono, deps: CommandRouteDeps): void {
     if (!body.ok) return body.resp;
     const command = (c.req.param('command') ?? '').toUpperCase();
     const segments = c.req.path.split('/').slice(2);
-    const argv = parsePathCommand(command, segments, new URL(c.req.url).searchParams, body.text);
+    const argv = parsePathCommand(
+      command,
+      segments,
+      new URL(c.req.url).searchParams,
+      body.text
+    );
     return handle(c, 'single', [argv]);
   }
 
@@ -182,4 +223,3 @@ export function registerCommandRoutes(app: Hono, deps: CommandRouteDeps): void {
   app.get('/:command{[a-zA-Z_.-]+}', pathHandler);
   app.post('/:command{[a-zA-Z_.-]+}', pathHandler);
 }
-

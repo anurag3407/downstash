@@ -14,31 +14,47 @@ function reqWith(headers: Record<string, string>) {
 
 describe('extractToken', () => {
   it('reads Bearer Authorization header', () => {
-    expect(extractToken(reqWith({ Authorization: 'Bearer dsk_x' }), new URL('https://gw/'))).toBe('dsk_x');
+    expect(
+      extractToken(reqWith({ Authorization: 'Bearer dsk_x' }), new URL('https://gw/'))
+    ).toBe('dsk_x');
   });
   it('is case-insensitive on Bearer', () => {
-    expect(extractToken(reqWith({ Authorization: 'bearer dsk_x' }), new URL('https://gw/'))).toBe('dsk_x');
+    expect(
+      extractToken(reqWith({ Authorization: 'bearer dsk_x' }), new URL('https://gw/'))
+    ).toBe('dsk_x');
   });
   it('falls back to _token query param', () => {
-    expect(extractToken(reqWith({}), new URL('https://gw/get/foo?_token=dsk_q'))).toBe('dsk_q');
+    expect(extractToken(reqWith({}), new URL('https://gw/get/foo?_token=dsk_q'))).toBe(
+      'dsk_q'
+    );
   });
   it('prefers header over query', () => {
     expect(
-      extractToken(reqWith({ Authorization: 'Bearer dsk_h' }), new URL('https://gw/?_token=dsk_q'))
+      extractToken(
+        reqWith({ Authorization: 'Bearer dsk_h' }),
+        new URL('https://gw/?_token=dsk_q')
+      )
     ).toBe('dsk_h');
   });
   it('returns null when neither present', () => {
     expect(extractToken(reqWith({}), new URL('https://gw/'))).toBe(null);
   });
   it('returns null for non-bearer authorization', () => {
-    expect(extractToken(reqWith({ Authorization: 'Basic abc' }), new URL('https://gw/'))).toBe(null);
+    expect(
+      extractToken(reqWith({ Authorization: 'Basic abc' }), new URL('https://gw/'))
+    ).toBe(null);
   });
 });
 
 describe('authenticate', () => {
   const now = () => 0;
   const deps = () => {
-    const authCache = new AuthCache({ positiveTtlMs: 1000, negativeTtlMs: 1000, maxEntries: 10, now });
+    const authCache = new AuthCache({
+      positiveTtlMs: 1000,
+      negativeTtlMs: 1000,
+      maxEntries: 10,
+      now
+    });
     return { authCache, now };
   };
 
@@ -61,7 +77,11 @@ describe('authenticate', () => {
   });
   it('cached when positive-cached and hash matches', async () => {
     const d = deps();
-    d.authCache.setPositive(await sha256Hex(VALID), { dbId: 'db1', readonly: true, l1TtlMs: 5 });
+    d.authCache.setPositive(await sha256Hex(VALID), {
+      dbId: 'db1',
+      readonly: true,
+      l1TtlMs: 5
+    });
     const r = await authenticate(VALID, d);
     expect(r.kind).toBe('cached');
     if (r.kind === 'cached') {

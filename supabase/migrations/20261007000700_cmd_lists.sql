@@ -336,7 +336,7 @@ values
   ('RPUSHX', 'downstash.cmd_rpushx', -3, '{write}', 1, 1, 1, 'lists', 'Append an element to a list, only if the list exists'),
   ('LPOP',   'downstash.cmd_lpop',   -2, '{write}', 1, 1, 1, 'lists', 'Remove and return elements from the beginning of a list'),
   ('RPOP',   'downstash.cmd_rpop',   -2, '{write}', 1, 1, 1, 'lists', 'Remove and return elements from the end of a list'),
-  ('LRANGE', 'downstash.cmd_lrange', 4,  '{read,cacheable}', 1, 1, 1, 'lists', 'Get a range of elements from a list'),
+  ('LRANGE', 'downstash.cmd_lrange', 4,  '{cacheable,read}', 1, 1, 1, 'lists', 'Get a range of elements from a list'),
   ('LLEN',   'downstash.cmd_llen',   2,  '{read}', 1, 1, 1, 'lists', 'Get the length of a list'),
   ('LINDEX', 'downstash.cmd_lindex', 3,  '{read}', 1, 1, 1, 'lists', 'Get an element from a list by its index'),
   ('LSET',   'downstash.cmd_lset',   4,  '{write}', 1, 1, 1, 'lists', 'Set the value of an element in a list by its index'),

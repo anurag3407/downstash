@@ -45,7 +45,8 @@ export function parseDatabasesToml(src: string): DatabaseRow[] {
     const line = rawLine.trim();
     if (line === '' || line.startsWith('#')) continue;
 
-    const tableMatch = /^\[\[([a-zA-Z0-9_.]+)\]\]$/.exec(line) ?? /^\[([a-zA-Z0-9_.]+)\]$/.exec(line);
+    const tableMatch =
+      /^\[\[([a-zA-Z0-9_.]+)\]\]$/.exec(line) ?? /^\[([a-zA-Z0-9_.]+)\]$/.exec(line);
     if (tableMatch) {
       const path = (tableMatch[1] ?? '').split('.');
       currentTable = {};
@@ -106,9 +107,7 @@ export function renderSeedSql(databases: DatabaseRow[], tokens: TokenRow[]): str
 
   if (databases.length > 0) {
     lines.push('insert into downstash.databases (slug, name) values');
-    const rows = databases.map(
-      (d) => `  (${sqlString(d.slug)}, ${sqlString(d.name)})`
-    );
+    const rows = databases.map((d) => `  (${sqlString(d.slug)}, ${sqlString(d.name)})`);
     lines.push(rows.join(',\n'));
     lines.push('on conflict (slug) do nothing;');
     lines.push('');
@@ -116,7 +115,9 @@ export function renderSeedSql(databases: DatabaseRow[], tokens: TokenRow[]): str
 
   if (tokens.length > 0) {
     lines.push('insert into downstash.tokens');
-    lines.push('  (name, token_hash, db_slug, read_only, rate_per_sec, rate_burst, expires_at, metadata)');
+    lines.push(
+      '  (name, token_hash, db_slug, read_only, rate_per_sec, rate_burst, expires_at, metadata)'
+    );
     lines.push('values');
     const rows = tokens.map((t) => {
       const ratePerSec = t.rate_per_sec === null ? 'null' : String(t.rate_per_sec);

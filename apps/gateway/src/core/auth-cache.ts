@@ -61,7 +61,10 @@ export class AuthCache {
 
   setNegative(hash: string): void {
     this.neg.delete(hash);
-    this.neg.set(hash, { value: true, expiresAt: this.opts.now() + this.opts.negativeTtlMs });
+    this.neg.set(hash, {
+      value: true,
+      expiresAt: this.opts.now() + this.opts.negativeTtlMs
+    });
     this.cap(this.neg);
     // A fresh negative result invalidates any stale positive entry.
     this.pos.delete(hash);

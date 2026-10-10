@@ -20,18 +20,15 @@ export const ERRORS = {
   NOT_FLOAT: 'ERR value is not a float',
   HASH_NOT_INTEGER: 'ERR hash value is not an integer',
   HASH_NOT_FLOAT: 'ERR hash value is not a float',
-  WRONGTYPE:
-    'WRONGTYPE Operation against a key holding the wrong kind of value',
+  WRONGTYPE: 'WRONGTYPE Operation against a key holding the wrong kind of value',
   NO_SUCH_KEY: 'ERR no such key',
   INDEX_OUT_OF_RANGE: 'ERR index out of range',
-  KEYS_TOO_MANY:
-    'ERR Downstash: KEYS matched more than 10000 keys, use SCAN',
+  KEYS_TOO_MANY: 'ERR Downstash: KEYS matched more than 10000 keys, use SCAN',
   BYLEX_NOT_SUPPORTED: 'ERR Downstash: BYLEX is not supported',
   LUA_NOT_SUPPORTED:
     'ERR Downstash: arbitrary Lua is not supported (script %s is not in the registry)',
   NOSCRIPT: 'NOSCRIPT No matching script. Please use EVAL.',
-  READ_ONLY_SCRIPT:
-    'ERR Write commands are not allowed from read-only scripts',
+  READ_ONLY_SCRIPT: 'ERR Write commands are not allowed from read-only scripts',
   INVALID_ARGUMENTS: 'ERR Invalid argument(s)',
   EMPTY_ARRAY: '(empty array)'
 } as const;

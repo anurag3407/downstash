@@ -8,135 +8,135 @@ The SQL `downstash.command_registry` and this table are kept identical;
 
 ## Strings
 
-| Command | Syntax | Flags | Summary |
-|---------|--------|-------|---------|
-| APPEND | APPEND key value | `{write}` | Append a value to a key |
-| DECR | DECR key | `{write}` | Decrement the integer value of a key by one |
-| DECRBY | DECRBY key decrement | `{write}` | Decrement the integer value of a key by the given number |
-| GET | GET key | `{read,cacheable}` | Get the value of a key |
-| GETDEL | GETDEL key | `{write}` | Get the value of a key and delete it |
-| GETSET | GETSET key value | `{write}` | Set the string value of a key and return its old value |
-| INCR | INCR key | `{write}` | Increment the integer value of a key by one |
-| INCRBY | INCRBY key increment | `{write}` | Increment the integer value of a key by the given amount |
-| INCRBYFLOAT | INCRBYFLOAT key increment | `{write}` | Increment the float value of a key by the given amount |
-| MGET | MGET key [key ...] | `{read,cacheable}` | Get the values of all the given keys |
-| MSET | MSET key value [key value ...] | `{write}` | Set multiple keys to multiple values |
-| MSETNX | MSETNX key value [key value ...] | `{write}` | Set multiple keys to multiple values, only if none exist |
-| PSETEX | PSETEX key ms value | `{write}` | Set the value and time to live in milliseconds of a key |
-| SET | SET key value [NX|XX] [GET] [EX seconds|PX ms|EXAT ts|PXAT ms|KEEPTTL] | `{write}` | Set the string value of a key |
-| SETEX | SETEX key seconds value | `{write}` | Set the value and expiration of a key |
-| SETNX | SETNX key value | `{write}` | Set the value of a key, only if the key does not exist |
-| STRLEN | STRLEN key | `{read}` | Get the length of the value stored in a key |
+| Command     | Syntax                           | Flags                 | Summary                                                  |
+| ----------- | -------------------------------- | --------------------- | -------------------------------------------------------- | ------- | ------- | -------- | --------- | ----------------------------- |
+| APPEND      | APPEND key value                 | `{write}`             | Append a value to a key                                  |
+| DECR        | DECR key                         | `{write}`             | Decrement the integer value of a key by one              |
+| DECRBY      | DECRBY key decrement             | `{write}`             | Decrement the integer value of a key by the given number |
+| GET         | GET key                          | `{read,cacheable}`    | Get the value of a key                                   |
+| GETDEL      | GETDEL key                       | `{write}`             | Get the value of a key and delete it                     |
+| GETSET      | GETSET key value                 | `{write}`             | Set the string value of a key and return its old value   |
+| INCR        | INCR key                         | `{write}`             | Increment the integer value of a key by one              |
+| INCRBY      | INCRBY key increment             | `{write}`             | Increment the integer value of a key by the given amount |
+| INCRBYFLOAT | INCRBYFLOAT key increment        | `{write}`             | Increment the float value of a key by the given amount   |
+| MGET        | MGET key [key ...]               | `{read,cacheable}`    | Get the values of all the given keys                     |
+| MSET        | MSET key value [key value ...]   | `{write}`             | Set multiple keys to multiple values                     |
+| MSETNX      | MSETNX key value [key value ...] | `{write}`             | Set multiple keys to multiple values, only if none exist |
+| PSETEX      | PSETEX key ms value              | `{write}`             | Set the value and time to live in milliseconds of a key  |
+| SET         | SET key value [NX                | XX] [GET] [EX seconds | PX ms                                                    | EXAT ts | PXAT ms | KEEPTTL] | `{write}` | Set the string value of a key |
+| SETEX       | SETEX key seconds value          | `{write}`             | Set the value and expiration of a key                    |
+| SETNX       | SETNX key value                  | `{write}`             | Set the value of a key, only if the key does not exist   |
+| STRLEN      | STRLEN key                       | `{read}`              | Get the length of the value stored in a key              |
 
 ## Keyspace & expiry
 
-| Command | Syntax | Flags | Summary |
-|---------|--------|-------|---------|
-| DEL | DEL key [key ...] | `{write}` | Delete a key |
-| EXISTS | EXISTS key [key ...] | `{read}` | Determine if a key exists |
-| EXPIRE | EXPIRE key seconds [NX|XX|GT|LT] | `{write}` | Set a seconds time to live on a key |
-| EXPIREAT | EXPIREAT key ts [NX|XX|GT|LT] | `{write}` | Set the expiration for a key as a Unix timestamp |
-| KEYS | KEYS pattern | `{read}` | Find all keys matching the given pattern |
-| PERSIST | PERSIST key | `{write}` | Remove the expiration from a key |
-| PEXPIRE | PEXPIRE key ms [NX|XX|GT|LT] | `{write}` | Set a milliseconds time to live on a key |
-| PEXPIREAT | PEXPIREAT key ms [NX|XX|GT|LT] | `{write}` | Set the expiration for a key as a Unix milliseconds timestamp |
-| PTTL | PTTL key | `{read}` | Get the time to live for a key in milliseconds |
-| RANDOMKEY | RANDOMKEY | `{read}` | Return a random key from the keyspace |
-| RENAME | RENAME key newkey | `{write}` | Rename a key |
-| RENAMENX | RENAMENX key newkey | `{write}` | Rename a key, only if the new key does not exist |
-| SCAN | SCAN cursor [MATCH pattern] [COUNT count] [TYPE type] | `{read}` | Incrementally iterate the keys space |
-| TTL | TTL key | `{read}` | Get the time to live for a key in seconds |
-| TYPE | TYPE key | `{read}` | Determine the type stored at key |
-| UNLINK | UNLINK key [key ...] | `{write}` | Delete a key asynchronously in another thread |
+| Command   | Syntax                                                | Flags     | Summary                                          |
+| --------- | ----------------------------------------------------- | --------- | ------------------------------------------------ | --- | --------- | ------------------------------------------------------------- |
+| DEL       | DEL key [key ...]                                     | `{write}` | Delete a key                                     |
+| EXISTS    | EXISTS key [key ...]                                  | `{read}`  | Determine if a key exists                        |
+| EXPIRE    | EXPIRE key seconds [NX                                | XX        | GT                                               | LT] | `{write}` | Set a seconds time to live on a key                           |
+| EXPIREAT  | EXPIREAT key ts [NX                                   | XX        | GT                                               | LT] | `{write}` | Set the expiration for a key as a Unix timestamp              |
+| KEYS      | KEYS pattern                                          | `{read}`  | Find all keys matching the given pattern         |
+| PERSIST   | PERSIST key                                           | `{write}` | Remove the expiration from a key                 |
+| PEXPIRE   | PEXPIRE key ms [NX                                    | XX        | GT                                               | LT] | `{write}` | Set a milliseconds time to live on a key                      |
+| PEXPIREAT | PEXPIREAT key ms [NX                                  | XX        | GT                                               | LT] | `{write}` | Set the expiration for a key as a Unix milliseconds timestamp |
+| PTTL      | PTTL key                                              | `{read}`  | Get the time to live for a key in milliseconds   |
+| RANDOMKEY | RANDOMKEY                                             | `{read}`  | Return a random key from the keyspace            |
+| RENAME    | RENAME key newkey                                     | `{write}` | Rename a key                                     |
+| RENAMENX  | RENAMENX key newkey                                   | `{write}` | Rename a key, only if the new key does not exist |
+| SCAN      | SCAN cursor [MATCH pattern] [COUNT count] [TYPE type] | `{read}`  | Incrementally iterate the keys space             |
+| TTL       | TTL key                                               | `{read}`  | Get the time to live for a key in seconds        |
+| TYPE      | TYPE key                                              | `{read}`  | Determine the type stored at key                 |
+| UNLINK    | UNLINK key [key ...]                                  | `{write}` | Delete a key asynchronously in another thread    |
 
 ## Hashes
 
-| Command | Syntax | Flags | Summary |
-|---------|--------|-------|---------|
-| HDEL | HDEL key field [field ...] | `{write}` | Delete one or more hash fields |
-| HEXISTS | HEXISTS key field | `{read}` | Determine if a hash field exists |
-| HGET | HGET key field | `{read,cacheable}` | Get the value of a hash field |
-| HGETALL | HGETALL key | `{read,cacheable}` | Get all the fields and values in a hash |
-| HINCRBY | HINCRBY key field increment | `{write}` | Increment the integer value of a hash field by the given number |
-| HINCRBYFLOAT | HINCRBYFLOAT key field increment | `{write}` | Increment the float value of a hash field by the given amount |
-| HKEYS | HKEYS key | `{read}` | Get all the fields in a hash |
-| HLEN | HLEN key | `{read}` | Get the number of fields in a hash |
-| HMGET | HMGET key field [field ...] | `{read,cacheable}` | Get the values of all the given hash fields |
-| HMSET | HMSET key field value [field value ...] | `{write}` | Set multiple hash fields |
-| HRANDFIELD | HRANDFIELD key [count [WITHVALUES]] | `{read}` | Get one or multiple random fields from a hash |
-| HSET | HSET key field value [field value ...] | `{write}` | Set hash fields |
-| HSETNX | HSETNX key field value | `{write}` | Set the value of a hash field, only if the field does not exist |
-| HSTRLEN | HSTRLEN key field | `{read}` | Get the length of the value of a hash field |
-| HVALS | HVALS key | `{read}` | Get all the values in a hash |
+| Command      | Syntax                                  | Flags              | Summary                                                         |
+| ------------ | --------------------------------------- | ------------------ | --------------------------------------------------------------- |
+| HDEL         | HDEL key field [field ...]              | `{write}`          | Delete one or more hash fields                                  |
+| HEXISTS      | HEXISTS key field                       | `{read}`           | Determine if a hash field exists                                |
+| HGET         | HGET key field                          | `{read,cacheable}` | Get the value of a hash field                                   |
+| HGETALL      | HGETALL key                             | `{read,cacheable}` | Get all the fields and values in a hash                         |
+| HINCRBY      | HINCRBY key field increment             | `{write}`          | Increment the integer value of a hash field by the given number |
+| HINCRBYFLOAT | HINCRBYFLOAT key field increment        | `{write}`          | Increment the float value of a hash field by the given amount   |
+| HKEYS        | HKEYS key                               | `{read}`           | Get all the fields in a hash                                    |
+| HLEN         | HLEN key                                | `{read}`           | Get the number of fields in a hash                              |
+| HMGET        | HMGET key field [field ...]             | `{read,cacheable}` | Get the values of all the given hash fields                     |
+| HMSET        | HMSET key field value [field value ...] | `{write}`          | Set multiple hash fields                                        |
+| HRANDFIELD   | HRANDFIELD key [count [WITHVALUES]]     | `{read}`           | Get one or multiple random fields from a hash                   |
+| HSET         | HSET key field value [field value ...]  | `{write}`          | Set hash fields                                                 |
+| HSETNX       | HSETNX key field value                  | `{write}`          | Set the value of a hash field, only if the field does not exist |
+| HSTRLEN      | HSTRLEN key field                       | `{read}`           | Get the length of the value of a hash field                     |
+| HVALS        | HVALS key                               | `{read}`           | Get all the values in a hash                                    |
 
 ## Lists
 
-| Command | Syntax | Flags | Summary |
-|---------|--------|-------|---------|
-| LINDEX | LINDEX key index | `{read}` | Get an element from a list by its index |
-| LLEN | LLEN key | `{read}` | Get the length of a list |
-| LPOP | LPOP key [count] | `{write}` | Remove and return elements from the beginning of a list |
-| LPOS | LPOS key element [RANK rank] [COUNT num-matches] [MAXLEN len] | `{read}` | Return the index of matching elements on a list |
-| LPUSH | LPUSH key element [element ...] | `{write}` | Prepend one or more elements to a list |
-| LPUSHX | LPUSHX key element [element ...] | `{write}` | Prepend an element to a list, only if the list exists |
-| LRANGE | LRANGE key start stop | `{read,cacheable}` | Get a range of elements from a list |
-| LREM | LREM key count element | `{write}` | Remove elements from a list |
-| LSET | LSET key index element | `{write}` | Set the value of an element in a list by its index |
-| LTRIM | LTRIM key start stop | `{write}` | Trim a list to the specified range |
-| RPOP | RPOP key [count] | `{write}` | Remove and return elements from the end of a list |
-| RPUSH | RPUSH key element [element ...] | `{write}` | Append one or more elements to a list |
-| RPUSHX | RPUSHX key element [element ...] | `{write}` | Append an element to a list, only if the list exists |
+| Command | Syntax                                                        | Flags              | Summary                                                 |
+| ------- | ------------------------------------------------------------- | ------------------ | ------------------------------------------------------- |
+| LINDEX  | LINDEX key index                                              | `{read}`           | Get an element from a list by its index                 |
+| LLEN    | LLEN key                                                      | `{read}`           | Get the length of a list                                |
+| LPOP    | LPOP key [count]                                              | `{write}`          | Remove and return elements from the beginning of a list |
+| LPOS    | LPOS key element [RANK rank] [COUNT num-matches] [MAXLEN len] | `{read}`           | Return the index of matching elements on a list         |
+| LPUSH   | LPUSH key element [element ...]                               | `{write}`          | Prepend one or more elements to a list                  |
+| LPUSHX  | LPUSHX key element [element ...]                              | `{write}`          | Prepend an element to a list, only if the list exists   |
+| LRANGE  | LRANGE key start stop                                         | `{read,cacheable}` | Get a range of elements from a list                     |
+| LREM    | LREM key count element                                        | `{write}`          | Remove elements from a list                             |
+| LSET    | LSET key index element                                        | `{write}`          | Set the value of an element in a list by its index      |
+| LTRIM   | LTRIM key start stop                                          | `{write}`          | Trim a list to the specified range                      |
+| RPOP    | RPOP key [count]                                              | `{write}`          | Remove and return elements from the end of a list       |
+| RPUSH   | RPUSH key element [element ...]                               | `{write}`          | Append one or more elements to a list                   |
+| RPUSHX  | RPUSHX key element [element ...]                              | `{write}`          | Append an element to a list, only if the list exists    |
 
 ## Sets
 
-| Command | Syntax | Flags | Summary |
-|---------|--------|-------|---------|
-| SADD | SADD key member [member ...] | `{write}` | Add one or more members to a set |
-| SCARD | SCARD key | `{read}` | Get the number of members in a set |
-| SDIFF | SDIFF key [key ...] | `{read}` | Subtract multiple sets |
-| SINTER | SINTER key [key ...] | `{read}` | Intersect multiple sets |
-| SISMEMBER | SISMEMBER key member | `{read,cacheable}` | Determine if a given value is a member of a set |
-| SMEMBERS | SMEMBERS key | `{read,cacheable}` | Get all the members in a set |
-| SMISMEMBER | SMISMEMBER key member [member ...] | `{read}` | Returns the membership associated with the given elements for a set |
-| SPOP | SPOP key [count] | `{write}` | Remove and return one or multiple random members from a set |
-| SRANDMEMBER | SRANDMEMBER key [count] | `{read}` | Get one or multiple random members from a set |
-| SREM | SREM key member [member ...] | `{write}` | Remove one or more members from a set |
-| SUNION | SUNION key [key ...] | `{read}` | Add multiple sets |
+| Command     | Syntax                             | Flags              | Summary                                                             |
+| ----------- | ---------------------------------- | ------------------ | ------------------------------------------------------------------- |
+| SADD        | SADD key member [member ...]       | `{write}`          | Add one or more members to a set                                    |
+| SCARD       | SCARD key                          | `{read}`           | Get the number of members in a set                                  |
+| SDIFF       | SDIFF key [key ...]                | `{read}`           | Subtract multiple sets                                              |
+| SINTER      | SINTER key [key ...]               | `{read}`           | Intersect multiple sets                                             |
+| SISMEMBER   | SISMEMBER key member               | `{read,cacheable}` | Determine if a given value is a member of a set                     |
+| SMEMBERS    | SMEMBERS key                       | `{read,cacheable}` | Get all the members in a set                                        |
+| SMISMEMBER  | SMISMEMBER key member [member ...] | `{read}`           | Returns the membership associated with the given elements for a set |
+| SPOP        | SPOP key [count]                   | `{write}`          | Remove and return one or multiple random members from a set         |
+| SRANDMEMBER | SRANDMEMBER key [count]            | `{read}`           | Get one or multiple random members from a set                       |
+| SREM        | SREM key member [member ...]       | `{write}`          | Remove one or more members from a set                               |
+| SUNION      | SUNION key [key ...]               | `{read}`           | Add multiple sets                                                   |
 
 ## Sorted sets
 
-| Command | Syntax | Flags | Summary |
-|---------|--------|-------|---------|
-| ZADD | ZADD key [NX|XX] [GT|LT] [CH] [INCR] score member [score member ...] | `{write}` | Add one or more members to a sorted set, or update scores |
-| ZCARD | ZCARD key | `{read}` | Get the number of members in a sorted set |
-| ZCOUNT | ZCOUNT key min max | `{read}` | Count the members in a sorted set with scores within the given values |
-| ZINCRBY | ZINCRBY key increment member | `{write}` | Increment the score of a member in a sorted set |
-| ZMSCORE | ZMSCORE key member [member ...] | `{read}` | Get the score of one or more members in a sorted set |
-| ZRANGE | ZRANGE key start stop [BYSCORE] [REV] [LIMIT offset count] [WITHSCORES] | `{read}` | Return a range of members in a sorted set |
-| ZRANK | ZRANK key member | `{read}` | Determine the index of a member in a sorted set |
-| ZREM | ZREM key member [member ...] | `{write}` | Remove one or more members from a sorted set |
-| ZREMRANGEBYRANK | ZREMRANGEBYRANK key start stop | `{write}` | Remove all members in a sorted set within the given indexes |
-| ZREMRANGEBYSCORE | ZREMRANGEBYSCORE key min max | `{write}` | Remove all members in a sorted set within the given scores |
-| ZREVRANK | ZREVRANK key member | `{read}` | Determine the index of a member in a sorted set, ordered from high to low |
-| ZSCORE | ZSCORE key member | `{read,cacheable}` | Get the score of a member in a sorted set |
+| Command          | Syntax                                                                  | Flags              | Summary                                                                   |
+| ---------------- | ----------------------------------------------------------------------- | ------------------ | ------------------------------------------------------------------------- | --------- | --------------------------------------------------------- |
+| ZADD             | ZADD key [NX                                                            | XX] [GT            | LT] [CH] [INCR] score member [score member ...]                           | `{write}` | Add one or more members to a sorted set, or update scores |
+| ZCARD            | ZCARD key                                                               | `{read}`           | Get the number of members in a sorted set                                 |
+| ZCOUNT           | ZCOUNT key min max                                                      | `{read}`           | Count the members in a sorted set with scores within the given values     |
+| ZINCRBY          | ZINCRBY key increment member                                            | `{write}`          | Increment the score of a member in a sorted set                           |
+| ZMSCORE          | ZMSCORE key member [member ...]                                         | `{read}`           | Get the score of one or more members in a sorted set                      |
+| ZRANGE           | ZRANGE key start stop [BYSCORE] [REV] [LIMIT offset count] [WITHSCORES] | `{read}`           | Return a range of members in a sorted set                                 |
+| ZRANK            | ZRANK key member                                                        | `{read}`           | Determine the index of a member in a sorted set                           |
+| ZREM             | ZREM key member [member ...]                                            | `{write}`          | Remove one or more members from a sorted set                              |
+| ZREMRANGEBYRANK  | ZREMRANGEBYRANK key start stop                                          | `{write}`          | Remove all members in a sorted set within the given indexes               |
+| ZREMRANGEBYSCORE | ZREMRANGEBYSCORE key min max                                            | `{write}`          | Remove all members in a sorted set within the given scores                |
+| ZREVRANK         | ZREVRANK key member                                                     | `{read}`           | Determine the index of a member in a sorted set, ordered from high to low |
+| ZSCORE           | ZSCORE key member                                                       | `{read,cacheable}` | Get the score of a member in a sorted set                                 |
 
 ## Server
 
-| Command | Syntax | Flags | Summary |
-|---------|--------|-------|---------|
-| DBSIZE | DBSIZE | `{read}` | Return the number of keys in the database |
-| ECHO | ECHO message | `{read}` | Echo the given string |
-| FLUSHALL | FLUSHALL [ASYNC|SYNC] | `{write,admin}` | Remove all keys from all databases |
-| FLUSHDB | FLUSHDB [ASYNC|SYNC] | `{write,admin}` | Remove all keys from the current database |
-| PING | PING [message] | `{read}` | Ping the server |
-| TIME | TIME | `{read}` | Return the current server time |
+| Command  | Syntax          | Flags    | Summary                                   |
+| -------- | --------------- | -------- | ----------------------------------------- | ----------------------------------------- |
+| DBSIZE   | DBSIZE          | `{read}` | Return the number of keys in the database |
+| ECHO     | ECHO message    | `{read}` | Echo the given string                     |
+| FLUSHALL | FLUSHALL [ASYNC | SYNC]    | `{write,admin}`                           | Remove all keys from all databases        |
+| FLUSHDB  | FLUSHDB [ASYNC  | SYNC]    | `{write,admin}`                           | Remove all keys from the current database |
+| PING     | PING [message]  | `{read}` | Ping the server                           |
+| TIME     | TIME            | `{read}` | Return the current server time            |
 
 ## Scripting
 
-| Command | Syntax | Flags | Summary |
-|---------|--------|-------|---------|
-| EVAL | EVAL script numkeys key [key ...] arg [arg ...] | `{script}` | Execute a registered script |
-| EVALSHA | EVALSHA sha1 numkeys key [key ...] arg [arg ...] | `{script}` | Execute a registered script by SHA |
-| EVALSHA_RO | EVALSHA_RO sha1 numkeys key [key ...] arg [arg ...] | `{script}` | Execute a registered script by SHA in read-only mode |
-| EVAL_RO | EVAL_RO script numkeys key [key ...] arg [arg ...] | `{script}` | Execute a registered script in read-only mode |
-| SCRIPT | SCRIPT LOAD script | SCRIPT EXISTS sha1 [sha1 ...] | SCRIPT FLUSH | `{script}` | Manage the script cache |
+| Command    | Syntax                                              | Flags                         | Summary                                              |
+| ---------- | --------------------------------------------------- | ----------------------------- | ---------------------------------------------------- | ---------- | ----------------------- |
+| EVAL       | EVAL script numkeys key [key ...] arg [arg ...]     | `{script}`                    | Execute a registered script                          |
+| EVALSHA    | EVALSHA sha1 numkeys key [key ...] arg [arg ...]    | `{script}`                    | Execute a registered script by SHA                   |
+| EVALSHA_RO | EVALSHA_RO sha1 numkeys key [key ...] arg [arg ...] | `{script}`                    | Execute a registered script by SHA in read-only mode |
+| EVAL_RO    | EVAL_RO script numkeys key [key ...] arg [arg ...]  | `{script}`                    | Execute a registered script in read-only mode        |
+| SCRIPT     | SCRIPT LOAD script                                  | SCRIPT EXISTS sha1 [sha1 ...] | SCRIPT FLUSH                                         | `{script}` | Manage the script cache |

@@ -24,11 +24,12 @@ export function checkFileHeaders(
  * Given the set of doc filenames under docs/ and the list of markdown links
  * found in docs/README.md, return doc files not referenced from the index.
  */
-export function checkUnreferencedDocs(docFiles: string[], readmeLinks: string[]): string[] {
+export function checkUnreferencedDocs(
+  docFiles: string[],
+  readmeLinks: string[]
+): string[] {
   const referenced = new Set(
-    readmeLinks
-      .map((l) => l.split('/').pop() ?? l)
-      .filter((s) => s.length > 0)
+    readmeLinks.map((l) => l.split('/').pop() ?? l).filter((s) => s.length > 0)
   );
   const problems: string[] = [];
   for (const doc of docFiles) {
@@ -66,7 +67,9 @@ export function checkDesignTokensDocumented(
   cssTokenNames: string[]
 ): string[] {
   const have = new Set(cssTokenNames);
-  return docTokenNames.filter((n) => !have.has(n)).map((n) => `token '${n}' documented but not defined`);
+  return docTokenNames
+    .filter((n) => !have.has(n))
+    .map((n) => `token '${n}' documented but not defined`);
 }
 
 /** Convenience: collect markdown fenced class usages like `class="btn"`. */

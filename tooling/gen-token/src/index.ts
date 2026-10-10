@@ -7,7 +7,12 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
-import { hashToken, renderSeedSql, type DatabaseRow, type TokenRow } from './generator.ts';
+import {
+  hashToken,
+  renderSeedSql,
+  type DatabaseRow,
+  type TokenRow
+} from './generator.ts';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, '..', '..', '..');
@@ -45,7 +50,8 @@ function loadConfig(): { databases: DatabaseRow[]; tokens: TomlToken[] } {
     const table = /^\[\[?([a-zA-Z0-9_]+)\]\]?$/.exec(line);
     if (table) {
       flush();
-      section = table[1] === 'databases' ? 'db' : table[1] === 'tokens' ? 'token' : null;
+      section =
+        table[1] === 'databases' ? 'db' : table[1] === 'tokens' ? 'token' : null;
       continue;
     }
     const kv = /^([a-zA-Z0-9_]+)\s*=\s*(.+)$/.exec(line);
@@ -65,7 +71,9 @@ function parseValue(raw: string): unknown {
   if (/^-?\d+$/.test(raw)) return Number(raw);
   if (raw.startsWith('[') && raw.endsWith(']')) {
     const inner = raw.slice(1, -1).trim();
-    return inner === '' ? [] : inner.split(',').map((s) => String(s.trim()).replace(/^["']|["']$/g, ''));
+    return inner === ''
+      ? []
+      : inner.split(',').map((s) => String(s.trim()).replace(/^["']|["']$/g, ''));
   }
   return raw;
 }

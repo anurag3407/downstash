@@ -22,16 +22,56 @@ interface Rule {
 
 /** The exact rule table from §11.7. */
 const RULES: Rule[] = [
-  { name: 'mid-radius', regex: /\brounded-(xs|sm|md|lg|xl|2xl|3xl|4xl)\b/, message: 'rounded-<size> not allowed (use rounded-none / rounded-full)' },
-  { name: 'raw-hex', regex: /#[0-9a-fA-F]{3,8}\b/, message: 'raw hex color not allowed (use neo-* tokens)' },
-  { name: 'blur', regex: /\b(backdrop-)?blur(-[a-z0-9]+)?\b/, message: 'blur not allowed' },
-  { name: 'gradient', regex: /\bbg-(gradient|linear|radial|conic)-/, message: 'gradient background not allowed' },
-  { name: 'grays', regex: /\b(gray|slate|zinc|neutral|stone)-\d{2,3}\b/, message: 'gray palette not allowed (no grays)' },
-  { name: 'soft-easing', regex: /\bease-in-out\b|\bease-in\b/, message: 'soft easing not allowed (use ease-linear / ease-out)' },
-  { name: 'light-weight', regex: /\bfont-(thin|extralight|light|normal)\b/, message: 'light font weight not allowed' },
-  { name: 'slow-motion', regex: /\bduration-(500|700|1000)\b/, message: 'slow motion not allowed (duration-100/200/300)' },
-  { name: 'default-shadow', regex: /\bshadow-(sm|md|lg|xl|2xl|inner)\b/, message: 'soft shadow not allowed (use shadow-neo-*)' },
-  { name: 'inline-style', regex: /style=\{\{[^}]*(color|background|boxShadow|borderRadius)/, message: 'inline color/shadow/radius style not allowed' }
+  {
+    name: 'mid-radius',
+    regex: /\brounded-(xs|sm|md|lg|xl|2xl|3xl|4xl)\b/,
+    message: 'rounded-<size> not allowed (use rounded-none / rounded-full)'
+  },
+  {
+    name: 'raw-hex',
+    regex: /#[0-9a-fA-F]{3,8}\b/,
+    message: 'raw hex color not allowed (use neo-* tokens)'
+  },
+  {
+    name: 'blur',
+    regex: /\b(backdrop-)?blur(-[a-z0-9]+)?\b/,
+    message: 'blur not allowed'
+  },
+  {
+    name: 'gradient',
+    regex: /\bbg-(gradient|linear|radial|conic)-/,
+    message: 'gradient background not allowed'
+  },
+  {
+    name: 'grays',
+    regex: /\b(gray|slate|zinc|neutral|stone)-\d{2,3}\b/,
+    message: 'gray palette not allowed (no grays)'
+  },
+  {
+    name: 'soft-easing',
+    regex: /\bease-in-out\b|\bease-in\b/,
+    message: 'soft easing not allowed (use ease-linear / ease-out)'
+  },
+  {
+    name: 'light-weight',
+    regex: /\bfont-(thin|extralight|light|normal)\b/,
+    message: 'light font weight not allowed'
+  },
+  {
+    name: 'slow-motion',
+    regex: /\bduration-(500|700|1000)\b/,
+    message: 'slow motion not allowed (duration-100/200/300)'
+  },
+  {
+    name: 'default-shadow',
+    regex: /\bshadow-(sm|md|lg|xl|2xl|inner)\b/,
+    message: 'soft shadow not allowed (use shadow-neo-*)'
+  },
+  {
+    name: 'inline-style',
+    regex: /style=\{\{[^}]*(color|background|boxShadow|borderRadius)/,
+    message: 'inline color/shadow/radius style not allowed'
+  }
 ];
 
 /** True if the given path is on the allowlist. */

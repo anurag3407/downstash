@@ -40,4 +40,3 @@ function renderValue(v: RedisValue, indent: string): string {
   }
   return String(v);
 }
-

@@ -40,7 +40,15 @@ describe('normalizeCommand', () => {
 
 describe('normalizePipeline', () => {
   it('normalizes each command', () => {
-    expect(normalizePipeline([['GET', 'a'], ['SET', 'b', 'c']], 10)).toEqual([
+    expect(
+      normalizePipeline(
+        [
+          ['GET', 'a'],
+          ['SET', 'b', 'c']
+        ],
+        10
+      )
+    ).toEqual([
       ['GET', 'a'],
       ['SET', 'b', 'c']
     ]);

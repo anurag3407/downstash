@@ -77,11 +77,17 @@ describe('precheck', () => {
   });
   it('rejects unknown command with exact message', () => {
     const r = precheck(['FOO', 'bar']);
-    expect(r).toEqual({ ok: false, error: "ERR unknown command 'FOO', with args beginning with: 'bar' " });
+    expect(r).toEqual({
+      ok: false,
+      error: "ERR unknown command 'FOO', with args beginning with: 'bar' "
+    });
   });
   it('rejects wrong arity (GET needs 2)', () => {
     const r = precheck(['GET']);
-    expect(r).toEqual({ ok: false, error: "ERR wrong number of arguments for 'get' command" });
+    expect(r).toEqual({
+      ok: false,
+      error: "ERR wrong number of arguments for 'get' command"
+    });
   });
   it('rejects too many args for fixed arity', () => {
     expect(precheck(['GET', 'a', 'b']).ok).toBe(false);

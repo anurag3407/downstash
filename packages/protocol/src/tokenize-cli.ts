@@ -43,14 +43,35 @@ export function tokenizeCli(line: string): string[] {
       if (inDouble) {
         if (c === '\\') {
           const next = line[i + 1];
-          if (next === '"') { token += '"'; i += 2; continue; }
-          if (next === '\\') { token += '\\'; i += 2; continue; }
-          if (next === 'n') { token += '\n'; i += 2; continue; }
-          if (next === 't') { token += '\t'; i += 2; continue; }
-          if (next === 'r') { token += '\r'; i += 2; continue; }
+          if (next === '"') {
+            token += '"';
+            i += 2;
+            continue;
+          }
+          if (next === '\\') {
+            token += '\\';
+            i += 2;
+            continue;
+          }
+          if (next === 'n') {
+            token += '\n';
+            i += 2;
+            continue;
+          }
+          if (next === 't') {
+            token += '\t';
+            i += 2;
+            continue;
+          }
+          if (next === 'r') {
+            token += '\r';
+            i += 2;
+            continue;
+          }
           if (next === 'x') {
             const hex = line.slice(i + 2, i + 4);
-            if (!/^[0-9a-fA-F]{2}$/.test(hex)) throw new ProtocolError('ERR Invalid argument(s)');
+            if (!/^[0-9a-fA-F]{2}$/.test(hex))
+              throw new ProtocolError('ERR Invalid argument(s)');
             token += String.fromCharCode(parseInt(hex, 16));
             i += 4;
             continue;
@@ -69,8 +90,16 @@ export function tokenizeCli(line: string): string[] {
         continue;
       }
       // Not in a quote.
-      if (c === '"') { inDouble = true; i++; continue; }
-      if (c === "'") { inSingle = true; i++; continue; }
+      if (c === '"') {
+        inDouble = true;
+        i++;
+        continue;
+      }
+      if (c === "'") {
+        inSingle = true;
+        i++;
+        continue;
+      }
       token += c;
       i++;
     }

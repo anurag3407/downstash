@@ -60,7 +60,11 @@ export class Transport {
   }
 
   /** Run a request; returns the parsed body (envelope or envelope array). */
-  async run(mode: Mode, command?: Command, commands?: Command[]): Promise<RawEnvelopeOrArray> {
+  async run(
+    mode: Mode,
+    command?: Command,
+    commands?: Command[]
+  ): Promise<RawEnvelopeOrArray> {
     if (this.r.fallback && this.now() < this.stickyUntil) {
       return this.runRpc(mode, command, commands);
     }
@@ -71,8 +75,10 @@ export class Transport {
         return res.body as RawEnvelopeOrArray;
       }
       if (NO_FAILOVER.has(res.status)) throw this.toError(res, mode, command, commands);
-      if (res.status === 429) return this.failover('rate_limited', 429, mode, command, commands);
-      if (res.status >= 500) return this.failover('server_error', res.status, mode, command, commands);
+      if (res.status === 429)
+        return this.failover('rate_limited', 429, mode, command, commands);
+      if (res.status >= 500)
+        return this.failover('server_error', res.status, mode, command, commands);
       throw this.toError(res, mode, command, commands);
     } catch (err) {
       if (err instanceof DownstashError) throw err;
@@ -98,11 +104,14 @@ export class Transport {
       throw this.toError(res, 'single', command);
     } catch (err) {
       if (err instanceof DownstashError) throw err;
-      throw new DownstashError(isAbortError(err) ? 'Request timed out' : 'Gateway request failed', {
-        command: firstCmd('single', command),
-        source: 'gateway',
-        cause: err
-      });
+      throw new DownstashError(
+        isAbortError(err) ? 'Request timed out' : 'Gateway request failed',
+        {
+          command: firstCmd('single', command),
+          source: 'gateway',
+          cause: err
+        }
+      );
     }
   }
 
@@ -115,7 +124,9 @@ export class Transport {
   ): Promise<RawEnvelopeOrArray> {
     if (!this.r.fallback) {
       throw new DownstashError(
-        reason === 'timeout' ? 'Request timed out' : `Gateway error${status ? ` (${status})` : ''}`,
+        reason === 'timeout'
+          ? 'Request timed out'
+          : `Gateway error${status ? ` (${status})` : ''}`,
         { command: firstCmd(mode, command, commands), source: 'gateway', status }
       );
     }
@@ -127,21 +138,41 @@ export class Transport {
     return this.runRpc(mode, command, commands);
   }
 
-  private toError(res: HttpResponse, mode: Mode, command?: Command, commands?: Command[]): DownstashError {
+  private toError(
+    res: HttpResponse,
+    mode: Mode,
+    command?: Command,
+    commands?: Command[]
+  ): DownstashError {
     const body = res.body as Record<string, unknown> | null;
     const msg =
-      body && typeof body === 'object' && !Array.isArray(body) && typeof body.error === 'string'
+      body &&
+      typeof body === 'object' &&
+      !Array.isArray(body) &&
+      typeof body.error === 'string'
         ? body.error
         : `Gateway error (${res.status})`;
-    return new DownstashError(msg, { command: firstCmd(mode, command, commands), source: 'gateway', status: res.status });
+    return new DownstashError(msg, {
+      command: firstCmd(mode, command, commands),
+      source: 'gateway',
+      status: res.status
+    });
   }
 
-  private async callGateway(mode: Mode, command?: Command, commands?: Command[]): Promise<HttpResponse> {
-    const path = mode === 'single' ? '/' : mode === 'pipeline' ? '/pipeline' : '/multi-exec';
+  private async callGateway(
+    mode: Mode,
+    command?: Command,
+    commands?: Command[]
+  ): Promise<HttpResponse> {
+    const path =
+      mode === 'single' ? '/' : mode === 'pipeline' ? '/pipeline' : '/multi-exec';
     const body = mode === 'single' ? command : commands;
     const res = await this.r.fetchImpl(`${trimSlash(this.r.url)}${path}`, {
       method: 'POST',
-      headers: { Authorization: `Bearer ${this.r.token}`, 'Content-Type': 'application/json' },
+      headers: {
+        Authorization: `Bearer ${this.r.token}`,
+        'Content-Type': 'application/json'
+      },
       body: JSON.stringify(body),
       signal: AbortSignal.timeout(this.r.timeoutMs)
     });
@@ -149,35 +180,66 @@ export class Transport {
     return { status: res.status, body: safeJson(text) };
   }
 
-  private async runRpc(mode: Mode, command?: Command, commands?: Command[]): Promise<RawEnvelopeOrArray> {
+  private async runRpc(
+    mode: Mode,
+    command?: Command,
+    commands?: Command[]
+  ): Promise<RawEnvelopeOrArray> {
     const fb = this.r.fallback;
     if (!fb) {
-      throw new DownstashError('No fallback configured', { command: firstCmd(mode, command, commands), source: 'rpc' });
+      throw new DownstashError('No fallback configured', {
+        command: firstCmd(mode, command, commands),
+        source: 'rpc'
+      });
     }
-    const rpcName = mode === 'single' ? 'downstash_exec' : mode === 'pipeline' ? 'downstash_pipeline' : 'downstash_multi';
+    const rpcName =
+      mode === 'single'
+        ? 'downstash_exec'
+        : mode === 'pipeline'
+          ? 'downstash_pipeline'
+          : 'downstash_multi';
     const params =
       mode === 'single'
-        ? { p_token: this.r.token, p_cmd: command?.[0], p_args: (command ?? []).slice(1) }
+        ? {
+            p_token: this.r.token,
+            p_cmd: command?.[0],
+            p_args: (command ?? []).slice(1)
+          }
         : { p_token: this.r.token, p_commands: commands };
 
-    const headers: Record<string, string> = { apikey: fb.supabaseKey, 'Content-Type': 'application/json' };
-    if (fb.supabaseKey.startsWith('eyJ')) headers.Authorization = `Bearer ${fb.supabaseKey}`;
+    const headers: Record<string, string> = {
+      apikey: fb.supabaseKey,
+      'Content-Type': 'application/json'
+    };
+    if (fb.supabaseKey.startsWith('eyJ'))
+      headers.Authorization = `Bearer ${fb.supabaseKey}`;
 
     let res: Response;
     try {
-      res = await this.r.fetchImpl(`${trimSlash(fb.supabaseUrl)}/rest/v1/rpc/${rpcName}`, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify(params),
-        signal: AbortSignal.timeout(this.r.timeoutMs)
-      });
+      res = await this.r.fetchImpl(
+        `${trimSlash(fb.supabaseUrl)}/rest/v1/rpc/${rpcName}`,
+        {
+          method: 'POST',
+          headers,
+          body: JSON.stringify(params),
+          signal: AbortSignal.timeout(this.r.timeoutMs)
+        }
+      );
     } catch (err) {
-      throw new DownstashError('Fallback RPC unreachable', { command: firstCmd(mode, command, commands), source: 'rpc', cause: err });
+      throw new DownstashError('Fallback RPC unreachable', {
+        command: firstCmd(mode, command, commands),
+        source: 'rpc',
+        cause: err
+      });
     }
     const body = safeJson(await res.text()) as Record<string, unknown> | null;
     const unauth = !!body && typeof body === 'object' && body.error === 'Unauthorized';
     if (unauth || res.status === 401) {
-      throw new DownstashError('Unauthorized', { command: firstCmd(mode, command, commands), source: 'rpc', status: 401 });
+      throw new DownstashError('Unauthorized', {
+        command: firstCmd(mode, command, commands),
+        source: 'rpc',
+        status: 401
+      });
     }
     return body as RawEnvelopeOrArray;
   }
@@ -197,9 +259,15 @@ function safeJson(text: string): unknown {
   }
 }
 function isAbortError(err: unknown): boolean {
-  return err instanceof Error && (err.name === 'AbortError' || err.name === 'TimeoutError');
+  return (
+    err instanceof Error && (err.name === 'AbortError' || err.name === 'TimeoutError')
+  );
 }
-function firstCmd(mode: Mode, command?: Command, commands?: Command[]): string | undefined {
+function firstCmd(
+  mode: Mode,
+  command?: Command,
+  commands?: Command[]
+): string | undefined {
   if (mode === 'single') {
     return command?.[0] !== undefined ? String(command[0]).toUpperCase() : undefined;
   }

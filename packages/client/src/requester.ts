@@ -21,7 +21,9 @@ export interface UpstashResponse<TResult> {
 export interface Requester {
   readYourWrites?: boolean;
   upstashSyncToken?: string;
-  request: <TResult = unknown>(req: UpstashRequest) => Promise<UpstashResponse<TResult>>;
+  request: <TResult = unknown>(
+    req: UpstashRequest
+  ) => Promise<UpstashResponse<TResult>>;
 }
 
 /** Map an Upstash request path to a Downstash run mode, or null for gateway-only. */
@@ -40,7 +42,9 @@ export function createDownstashRequester(config: DownstashConfig): Requester {
   const transport = new Transport({ config });
 
   return {
-    async request<TResult = unknown>(req: UpstashRequest): Promise<UpstashResponse<TResult>> {
+    async request<TResult = unknown>(
+      req: UpstashRequest
+    ): Promise<UpstashResponse<TResult>> {
       const mode = modeFromPath(req.path);
       let raw: RawEnvelopeOrArray;
 

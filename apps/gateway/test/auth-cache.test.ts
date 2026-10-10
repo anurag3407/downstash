@@ -5,7 +5,12 @@ import { describe, expect, it } from 'vitest';
 import { AuthCache } from '../src/core/auth-cache.ts';
 
 function make(now: () => number, posTtl = 1000, negTtl = 1000, max = 10) {
-  return new AuthCache({ positiveTtlMs: posTtl, negativeTtlMs: negTtl, maxEntries: max, now });
+  return new AuthCache({
+    positiveTtlMs: posTtl,
+    negativeTtlMs: negTtl,
+    maxEntries: max,
+    now
+  });
 }
 
 describe('AuthCache positive', () => {
