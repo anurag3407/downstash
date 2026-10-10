@@ -4,3 +4,6 @@ dist
 coverage
 pnpm-lock.yaml
 *.min.js
+
+# Generated files
+docs/engine/commands.md

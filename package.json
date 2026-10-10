@@ -20,6 +20,7 @@
     "db:test": "node --experimental-strip-types supabase/tests/run-sql.mjs",
     "check:docs": "node tooling/check-docs/src/index.ts",
     "check:design": "node tooling/check-design/src/index.ts",
+    "docs:commands": "pnpm --filter @downstash/protocol gen:docs",
     "gen:token": "node tooling/gen-token/src/index.ts",
     "gen:enc-key": "node tooling/gen-enc-key/src/index.ts",
     "gateway:dev": "pnpm --filter @downstash/gateway dev"

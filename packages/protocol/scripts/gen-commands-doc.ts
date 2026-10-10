@@ -37,6 +37,11 @@ const FAMILY_TITLE: Record<CommandFamily, string> = {
   scripting: 'Scripting'
 };
 
+/** Escape a value for use inside a markdown table cell (pipe must be `\|`). */
+function cell(s: string): string {
+  return s.replace(/\|/g, '\\|');
+}
+
 /** Render flags as the SQL registry does: `write`, `read,cacheable`, etc. */
 function flagsCell(flags: readonly string[]): string {
   return `\`{${flags.join(',')}}\``;
@@ -46,7 +51,10 @@ function familyTable(family: CommandFamily): string {
   const rows = Object.values(COMMANDS)
     .filter((c) => c.family === family)
     .sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0))
-    .map((c) => `| ${c.name} | ${c.syntax} | ${flagsCell(c.flags)} | ${c.summary} |`);
+    .map(
+      (c) =>
+        `| ${c.name} | ${cell(c.syntax)} | ${flagsCell(c.flags)} | ${cell(c.summary)} |`
+    );
   return [
     `## ${FAMILY_TITLE[family]}`,
     '',
