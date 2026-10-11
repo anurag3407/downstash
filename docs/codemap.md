@@ -76,6 +76,35 @@ each path here exists and each source file appears here.
 - `supabase/migrations/20261007001100_users_billing.sql` — Users, workspaces, billing tables.
 - `supabase/migrations/20261007001200_ops_cron_stats.sql` — Ops: sweeper, stats, cron jobs.
 - `supabase/migrations/20261007001300_seed.sql` — Seed data.
+- `supabase/migrations/20261007001400_rpc_gateway.sql` — Public RPC surface (`downstash_exec/_pipeline/_multi/_gw_run`).
+- `supabase/migrations/20261007009900_test_helpers.sql` — `tests.*` assertion helpers for the SQL suite.
+
+## Supabase test suite (`supabase/tests/`)
+
+- `supabase/tests/_harness.sql` — `tests.*` helpers (`eq`, `raises`, `reset`, …).
+- `supabase/tests/run-sql.mjs` — Runner: loads the harness, then each family file via psql.
+- `supabase/tests/server.sql` — Server command assertions.
+- `supabase/tests/strings.sql` — String command assertions.
+- `supabase/tests/keyspace.sql` — Keyspace & expiry assertions.
+- `supabase/tests/hashes.sql` — Hash command assertions.
+- `supabase/tests/lists.sql` — List command assertions.
+- `supabase/tests/sets.sql` — Set command assertions.
+- `supabase/tests/zsets.sql` — Sorted-set command assertions.
+
+## `tests` (`@downstash/tests`)
+
+- `tests/package.json` — Workspace package; `test:sql` / `test:compat` / `test:diff` scripts.
+- `tests/helpers/sql.ts` — `postgres` pool + `exec`/`rawRun`/`asAnon` helpers.
+- `tests/helpers/fixtures.ts` — Per-test database + token fixtures with cleanup.
+- `tests/helpers/gateway.ts` — Gateway HTTP helpers for the compat suite.
+- `tests/helpers/srh.ts` — serverless-redis-http helpers for the differential suite.
+- `tests/sql/schema.test.ts` — Schema/role/persistence assertions.
+- `tests/sql/engine.test.ts` — dispatch/run, pipeline limits, gw_run auth, usage counters.
+- `tests/sql/helpers.test.ts` — Engine helper unit tests (`to_int`, `glob_*`, …).
+- `tests/sql/strings.test.ts` — String command suite.
+- `tests/sql/hashes.test.ts` — Hash command suite.
+- `tests/sql/lists.test.ts` — List command suite.
+- `tests/sql/sets.test.ts` — Set command suite.
 
 ## Supabase scripts
 

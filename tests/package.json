@@ -1,0 +1,14 @@
+{
+  "name": "@downstash/tests",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint sql helpers",
+    "test": "echo 'SQL/compat/differential suites need live services; run pnpm test:sql | test:compat | test:diff' && exit 0",
+    "test:sql": "vitest run --config vitest.sql.config.ts",
+    "test:compat": "vitest run --config vitest.compat.config.ts",
+    "test:diff": "vitest run --config vitest.diff.config.ts"
+  }
+}
