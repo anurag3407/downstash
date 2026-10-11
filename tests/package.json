@@ -12,6 +12,7 @@
     "test:diff": "vitest run --config vitest.diff.config.ts"
   },
   "devDependencies": {
+    "@downstash/client": "workspace:*",
     "@upstash/ratelimit": "2.2.0",
     "@upstash/redis": "1.39.0"
   }

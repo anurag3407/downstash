@@ -4,7 +4,7 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Downstash } from '../src/downstash.ts';
-import { SB, baseConfig, clock, enc, makeFetch } from './helpers.ts';
+import { SB, baseConfig, clock, makeFetch } from './helpers.ts';
 
 beforeEach(() => clock.reset());
 afterEach(() => clock.restore());
@@ -13,7 +13,7 @@ describe('failover events + sticky', () => {
   it('fires onFailover once per transition', async () => {
     const { fn } = makeFetch([
       { status: 503, body: {} },
-      { status: 200, body: { result: enc('a') } }
+      { status: 200, body: { result: 'a' } }
     ]);
     const onFailover = vi.fn();
     const c = new Downstash(
@@ -33,8 +33,8 @@ describe('failover events + sticky', () => {
   it('uses RPC directly during the sticky window', async () => {
     const { fn, calls } = makeFetch([
       { status: 503, body: {} },
-      { status: 200, body: { result: enc('a') } },
-      { status: 200, body: { result: enc('b') } }
+      { status: 200, body: { result: 'a' } },
+      { status: 200, body: { result: 'b' } }
     ]);
     const c = new Downstash(
       baseConfig({
@@ -52,8 +52,8 @@ describe('failover events + sticky', () => {
   it('leaves sticky window after stickyFailoverMs', async () => {
     const { fn, calls } = makeFetch([
       { status: 503, body: {} },
-      { status: 200, body: { result: enc('a') } },
-      { status: 200, body: { result: enc('b') } }
+      { status: 200, body: { result: 'a' } },
+      { status: 200, body: { result: 'b' } }
     ]);
     const c = new Downstash(
       baseConfig({
@@ -80,7 +80,7 @@ describe('timeout handling', () => {
       }
       return {
         status: 200,
-        text: async () => JSON.stringify({ result: enc('v') })
+        text: async () => JSON.stringify({ result: 'v' })
       } as unknown as Response;
     });
     const onFailover = vi.fn();
@@ -119,7 +119,7 @@ describe('RPC headers (eyJ rule)', () => {
     let headers: Record<string, string> = {};
     const { fn } = makeFetch([
       { status: 503, body: {} },
-      { status: 200, body: { result: enc('v') } }
+      { status: 200, body: { result: 'v' } }
     ]);
     const wrapped = vi.fn(async (url: string, init?: RequestInit) => {
       const r = await fn(url, init);
@@ -141,7 +141,7 @@ describe('RPC headers (eyJ rule)', () => {
     let headers: Record<string, string> = {};
     const { fn } = makeFetch([
       { status: 503, body: {} },
-      { status: 200, body: { result: enc('v') } }
+      { status: 200, body: { result: 'v' } }
     ]);
     const wrapped = vi.fn(async (url: string, init?: RequestInit) => {
       const r = await fn(url, init);

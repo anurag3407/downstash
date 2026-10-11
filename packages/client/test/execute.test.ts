@@ -4,14 +4,14 @@
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { Downstash } from '../src/downstash.ts';
-import { SB, baseConfig, clock, enc, makeFetch } from './helpers.ts';
+import { SB, baseConfig, clock, makeFetch } from './helpers.ts';
 
 beforeEach(() => clock.reset());
 afterEach(() => clock.restore());
 
 describe('Downstash.execute', () => {
   it('returns decoded result on 2xx', async () => {
-    const { fn } = makeFetch([{ status: 200, body: { result: enc('hello') } }]);
+    const { fn } = makeFetch([{ status: 200, body: { result: 'hello' } }]);
     const c = new Downstash(baseConfig({ fetch: fn as unknown as typeof fetch }));
     expect(await c.get('foo')).toBe('hello');
   });
@@ -49,7 +49,7 @@ describe('Downstash.execute', () => {
   it('fails over on 429 via RPC', async () => {
     const { fn, calls } = makeFetch([
       { status: 429, body: { error: 'rate' } },
-      { status: 200, body: { result: enc('v') } }
+      { status: 200, body: { result: 'v' } }
     ]);
     const c = new Downstash(
       baseConfig({
@@ -64,7 +64,7 @@ describe('Downstash.execute', () => {
   it('fails over on 503 via RPC', async () => {
     const { fn } = makeFetch([
       { status: 503, body: {} },
-      { status: 200, body: { result: enc('ok') } }
+      { status: 200, body: { result: 'ok' } }
     ]);
     const c = new Downstash(
       baseConfig({

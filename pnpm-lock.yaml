@@ -59,11 +59,10 @@ importers:
         version: 2.1.8(@types/node@20.17.9)
 
   packages/client:
-    dependencies:
+    devDependencies:
       '@downstash/protocol':
         specifier: workspace:*
         version: link:../protocol
-    devDependencies:
       '@types/node':
         specifier: 20.17.9
         version: 20.17.9
@@ -88,6 +87,9 @@ importers:
 
   tests:
     devDependencies:
+      '@downstash/client':
+        specifier: workspace:*
+        version: link:../packages/client
       '@upstash/ratelimit':
         specifier: 2.2.0
         version: 2.2.0(@upstash/redis@1.39.0)

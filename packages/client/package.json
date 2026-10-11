@@ -31,10 +31,8 @@
       "optional": true
     }
   },
-  "dependencies": {
-    "@downstash/protocol": "workspace:*"
-  },
   "devDependencies": {
+    "@downstash/protocol": "workspace:*",
     "@types/node": "20.17.9",
     "tsup": "8.3.5",
     "typescript": "5.7.2",

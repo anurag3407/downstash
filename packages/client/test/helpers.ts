@@ -7,7 +7,6 @@ import type { DownstashConfig } from '../src/types.ts';
 
 export const URL_ = 'https://gw.example.dev';
 export const SB = 'https://proj.supabase.co';
-export const enc = (s: string): string => btoa(s);
 
 export interface MockedResponse {
   status: number;

@@ -8,26 +8,6 @@ import { DownstashError } from './error.ts';
 import { Transport } from './transport.ts';
 import type { Command, DownstashConfig, RawEnvelopeOrArray } from './types.ts';
 
-/** Decode a raw gateway/RPC envelope result back into Redis values. */
-function decode(v: RedisValue): RedisValue {
-  if (typeof v === 'string') {
-    try {
-      return base64Decode(v);
-    } catch {
-      return v;
-    }
-  }
-  if (Array.isArray(v)) return v.map(decode);
-  return v;
-}
-
-function base64Decode(s: string): string {
-  const binary = atob(s);
-  const bytes = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-  return new TextDecoder().decode(bytes);
-}
-
 function isEnvelopeArray(x: RawEnvelopeOrArray): x is ResultEnvelope[] {
   return Array.isArray(x);
 }
@@ -39,7 +19,13 @@ export class Downstash {
     this.transport = new Transport({ config });
   }
 
-  /** Run a single command and return its decoded result. */
+  /**
+   * Run a single command and return its result. Throws `DownstashError` when
+   * the reply is an error envelope.
+   *
+   * The gateway replies in plain JSON because this client never sends
+   * `Upstash-Encoding: base64` (§10.2), so there is nothing to decode.
+   */
   async execute<T = unknown>(command: Command): Promise<T> {
     const argv = normalizeCommand(command);
     const raw = await this.transport.run('single', argv);
@@ -48,21 +34,19 @@ export class Downstash {
       const first = raw[0];
       if (first && 'error' in first)
         throw new DownstashError(first.error, { command: argv[0], source: 'gateway' });
-      return decode((first?.result ?? null) as RedisValue) as T;
+      return (first?.result ?? null) as T;
     }
     if (raw && 'error' in raw) {
       throw new DownstashError(raw.error, { command: argv[0], source: 'gateway' });
     }
-    return decode(raw.result) as T;
+    return raw.result as T;
   }
 
-  /** Run a pipeline atomically and return every envelope. */
+  /** Run a pipeline atomically and return every envelope, in order. */
   async pipeline(commands: Command[]): Promise<ResultEnvelope[]> {
     const argvs = normalizePipeline(commands, 1000);
     const raw = await this.transport.run('pipeline', undefined, argvs);
-    if (isEnvelopeArray(raw))
-      return raw.map((e) => ('error' in e ? e : { result: decode(e.result) }));
-    return [];
+    return isEnvelopeArray(raw) ? raw : [];
   }
 
   /** Run a MULTI transaction. Identical to pipeline in Downstash. */
