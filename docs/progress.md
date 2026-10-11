@@ -1,8 +1,8 @@
 ---
 title: Progress
 status: stable
-last_updated: 2026-10-07
-updated_by: P0-T1
+last_updated: 2026-10-11
+updated_by: P4-T1
 code_paths:
   - plan.md
 ---
@@ -13,94 +13,146 @@ Task tracker. Status is one of `TODO`, `IN PROGRESS`, `DONE`, `BLOCKED`.
 
 ## Status summary
 
-| Phase | Focus                                     | Status      |
-| ----- | ----------------------------------------- | ----------- |
-| P0    | Scaffolding, docs, design tokens, tooling | DONE        |
-| P1    | Storage engine command families           | DONE        |
-| P2    | Gateway                                   | DONE        |
-| P3    | Client SDK                                | DONE        |
-| P4    | Scripts + ratelimit capture               | IN PROGRESS |
-| P5    | Console/web                               | TODO        |
-| P6    | Deploy + ops                              | TODO        |
-| P7    | Testing (compat/differential)             | TODO        |
-| P8    | Hardening + launch                        | TODO        |
+| Phase | Focus                           | Status      |
+| ----- | ------------------------------- | ----------- |
+| P0    | Scaffolding, docs, tooling      | DONE        |
+| P1    | Storage engine command families | DONE        |
+| P2    | Protocol package                | DONE        |
+| P3    | Gateway                         | DONE        |
+| P4    | Scripts + compatibility suites  | DONE        |
+| P5    | Client SDK                      | DONE        |
+| P6    | Web foundation                  | IN PROGRESS |
+| P7    | Console features                | TODO        |
+| P8    | Landing                         | TODO        |
+| P9    | Hardening and release           | IN PROGRESS |
 
 ## P0-T1 — Scaffold
 
 - **Status:** DONE
 - **Summary:** pnpm workspace, TS base config, ESLint, Prettier, root scripts.
-- **Verification:** `pnpm -r typecheck` green.
+- **Verification:** `pnpm typecheck` green.
 
-## P0-T2 — Docs + tooling
+## P0-T2 — Docs skeleton
 
 - **Status:** DONE
-- **Summary:** `docs/` tree, `check-docs`, `check-design`, `gen-token`, `gen-enc-key`.
-- **Verification:** `pnpm check:docs` and `pnpm check:design` pass.
+- **Summary:** `docs/README.md`, conventions, design, ADR template and
+  `0000`–`0013`.
+- **Verification:** `pnpm check:docs` green.
+
+## P0-T3 — Tooling
+
+- **Status:** DONE
+- **Summary:** `check-docs`, `check-design`, `gen-token`, `gen-enc-key` with
+  fixture-driven tests for each checker.
+- **Verification:** `pnpm check:docs && pnpm check:design` green; both checkers
+  fail on crafted fixtures.
 
 ## P1-T1..T10 — Storage engine
 
 - **Status:** DONE
 - **Summary:** Core schema + engine, all 8 command families (95 commands),
-  scripts, users/billing, ops/cron, seed, RPC gateway surface.
-- **Verification:** `./supabase/scripts/pg-local-reset.sh` loads all 14
-  migrations cleanly; hashes/lists/sets/zsets verified against real Postgres.
-- **Fixes made while writing the engine tests:** `to_int` compares in `numeric`
-  (19-digit out-of-range values return the friendly error instead of a raw cast
-  failure), `dispatch` coalesces a SQL-null handler result to JSON `null`,
-  `TTL` rounds once instead of truncating milliseconds first, `RPOP count` no
-  longer reorders the popped values, and all `cmd_eval` error paths raise through
-  `downstash.raise_err` (errcode `DS000`) so per-command error envelopes and the
-  400-status RPC path behave as specified.
-
-## P2 — Gateway
-
-- **Status:** DONE
-- **Summary:** Worker app, routing, auth + cache, L1 cache, usage buffer, respond.
-- **Verification:** 69 gateway unit tests green; `wrangler deploy --dry-run` builds.
-
-## P3 — Client SDK
-
-- **Status:** DONE
-- **Summary:** Transport with failover, typed commands, pipeline/multi.
-- **Verification:** 13 client unit tests green.
+  scripts, control plane, ops/cron, seed, RPC gateway surface.
+- **Deviations from plan §4:**
+  - Tooling lives in `tooling/*` workspace packages, not `scripts/`.
+  - No `turbo`/`turbo.json`: root scripts use `pnpm -r`. Fewer moving parts.
+  - `packageManager` is `pnpm@10.13.1`, not 9.15.
+  - Migration names beyond `…001400_rpc_gateway.sql` are fix-forwards and
+    test-hooks (`…09900_test_helpers.sql`), plus the additions below.
+- **Verification:** 151 SQL suite tests, 7/7 raw SQL assertion files.
 
 ## Engine test suites
 
 - **Status:** DONE
-- **Summary:** Two suites, both green against the scratch Postgres:
-  - `supabase/tests/*.sql` — raw PL/pgSQL assertions via
-    `node supabase/tests/run-sql.mjs`.
-  - `tests/sql/*.test.ts` — vitest suite via
-    `TEST_DATABASE_URL=postgres://<user>@127.0.0.1:55432/downstash_test pnpm test:sql`
-    (151 tests: schema, engine, helpers, strings, hashes, lists, sets).
-- **Verification:** 7/7 SQL files pass; 151/151 vitest tests pass; typecheck,
-  lint, format, `check:docs`, `check:design` and `build` all green.
-- **Notes:**
-  - `tests/tsconfig.json` sets `allowImportingTsExtensions` (the suites import
-    `./helpers/*.ts` under `noEmit`).
-  - `asAnon` casts the `sql.begin` result (`UnwrapPromiseArray<T>` → `T`);
-    `TxSql` uses `Record<string, unknown>` to satisfy
-    `@typescript-eslint/no-empty-object-type`.
-  - The `postgres` driver serializes string parameters as JSON, so values bound
-    against `::jsonb` must be passed as JS arrays, never pre-stringified.
-  - Null bytes are unreachable from SQL — Postgres's jsonb parser rejects
-    `\u0000` before `to_argv` runs. The gateway/protocol layer rejects them first
-    (`packages/protocol/test/argv.test.ts`); the SQL guard is defense-in-depth
-    and the SQL test documents that layering.
-  - `tests` lint covers `sql` and `helpers`; the compat/differential suites do
-    not exist yet, so those directories are not linted.
+- **Summary:** raw PL/pgSQL assertions via `node supabase/tests/run-sql.mjs`, and
+  the vitest `tests/sql` suite. Both run against the scratch database created by
+  `supabase/scripts/pg-local-reset.sh`.
 
-## Deviations
+## P2 — Protocol package
 
-- Local SQL validation uses a scratch Postgres 15 instance via
-  `supabase/scripts/pg-local-reset.sh` (no Docker/Supabase CLI required).
-- Engine tests live in two places: raw SQL assertions (`supabase/tests`) and
-  the vitest `tests/sql` suite; both run against the same scratch database.
+- **Status:** DONE
+- **Summary:** Command registry mirroring `command_registry`, argv
+  normalisation, base64 encoding, token helpers, CLI tokenizer and formatter.
+- **Verification:** 103 unit tests.
+
+## P3 — Gateway
+
+- **Status:** DONE
+- **Summary:** Hono app (pure, injectable), routing, auth + caches, L1 cache,
+  usage buffer, respond, CORS, PostgREST adapter, scheduled keep-alive.
+- **Verification:** 72 unit tests.
+
+## P4 — Scripts and compatibility
+
+- **Status:** DONE
+- **Summary:**
+  - `tests/capture/capture-scripts.ts` extracts the nine `@upstash/ratelimit`
+    single-region scripts, resolves `${…}` interpolation and verifies each
+    SHA-1 against the SDK's own map.
+  - `20261007001100_scripts_ratelimit.sql` ports all nine to PL/pgSQL; the
+    registry rows are generated byte-exactly from `scripts.json`.
+  - `tests/compat/{redis,ratelimit,failover}.test.ts` — 42 cases.
+  - `tests/differential/*` — 301 corpus steps across 7 families plus 13 script
+    assertions.
+- **Bugs found here, all fixed:**
+  - The gateway returned an array for single commands (plan §9.6 violation).
+  - `@downstash/client` base64-decoded replies it never asked to be encoded.
+  - `ZRANGE` parsed options case-sensitively, so `withscores` was dropped.
+  - `ZRANGE … BYSCORE REV` swapped the bounds and always returned `[]`.
+  - `SCAN` failed whenever it ran out of keys (`#>> '[-1]'` is a text path, not
+    an index).
+- **Verification:** `pnpm test:sql`, `pnpm test:compat`, `pnpm test:diff` green.
+
+## P5 — Client SDK
+
+- **Status:** DONE
+- **Summary:** Failover transport with sticky window, typed commands,
+  pipeline/multi, `createDownstashRequester`, README.
+- **Verification:** 13 client unit tests + the 9-case failover compat suite.
+
+## P6 — Web foundation
+
+- **Status:** IN PROGRESS
+- **Done:** documented the product surface — `docs/web/{routes,data-access,auth,
+features}.md`, `docs/design/{system,tokens,components,patterns,copy}.md`, the
+  root `README.md`, `LICENSE`, `CHANGELOG.md` and `AGENTS.md`.
+- **Remaining:** `apps/web` itself (Next.js scaffold, tokens, primitives,
+  clerk, data layer) — P6-T1..T5.
+- **Verification:** `check:docs` and `check:design` green over the documented
+  contract.
+
+## Deviations from plan.md
+
+| #   | Plan says                                                    | This repo does                                                               | Why                                                      |
+| --- | ------------------------------------------------------------ | ---------------------------------------------------------------------------- | -------------------------------------------------------- |
+| V1  | `scripts/` at the root                                       | `tooling/*` workspace packages                                               | pnpm packages, testable, and the root scripts still work |
+| V2  | `turbo` as the task runner                                   | `pnpm -r`                                                                    | One less build server to babysit at this size            |
+| V3  | `pnpm@9.15.0`                                                | `pnpm@10.13.1`                                                               | The environment's pinned version                         |
+| V4  | `supabase db reset` for local dev                            | `supabase/scripts/pg-local-reset.sh` against a scratch Postgres 15 on :55432 | No Docker or Supabase CLI in this environment            |
+| V5  | `docs/engine/commands.md` freshness enforced by `docs:check` | Generated by `pnpm docs:commands`, kept current by hand                      | The checker's rule 6 is not implemented                  |
+| V6  | Codemap coverage enforced both ways by `docs:check`          | codemap updated by hand                                                      | The checker enforces headers + index reachability only   |
+| V7  | `.github/workflows/{ci,deploy-gateway}.yml`                  | Not written yet                                                              | P9-T2                                                    |
+| V8  | `apps/web` full console + landing                            | Documented, not built                                                        | P6–P8                                                    |
 
 ## Follow-ups
 
-- Script capture harness (`tests/capture/capture-scripts.ts`) + native ports
-  (P4-T1).
-- Compat suite `tests/compat/redis.test.ts` + `ratelimit.test.ts` (P4-T2, P4-T3).
-- Differential suite `tests/differential/*` (P4-T4) — needs SRH.
-- Console/web app.
+1. **P6-T1..T5** — build `apps/web`: scaffold, tokens, primitives, clerk, data
+   layer. `docs/*` already pins the contract; the acceptance criteria are
+   `pnpm --filter @downstash/web build`, `pnpm design:check`, and a token swatch
+   page where `bg-gray-500` generates no CSS.
+2. **P7-T1..T7** — the console features, one module per folder, each with
+   `queries.ts`/`actions.ts`/`schemas.ts`/`components/`/`README.md`.
+3. **P8-T1** — the landing page sections and metadata.
+4. **P9-T1..T3** — Playwright + axe specs, the five CI jobs, and the v1.0.0
+   release notes.
+5. Add `docs/engine/rpc.md` — `20261007001400_rpc_gateway.sql` links to it.
+
+## Verification snapshot
+
+| Suite                                      | Result                        |
+| ------------------------------------------ | ----------------------------- |
+| `pnpm test` (unit)                         | 213 passed across 7 packages  |
+| `pnpm test:sql`                            | 151 passed                    |
+| `pnpm test:compat`                         | 42 passed                     |
+| `pnpm test:diff`                           | 13 passed (1 skipped: no SRH) |
+| `pnpm lint` / `typecheck` / `format:check` | green                         |
+| `pnpm check:docs` / `check:design`         | green                         |

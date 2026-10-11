@@ -20,7 +20,7 @@ export interface AppDeps {
   storage: Storage;
   config: GatewayConfig;
   now: () => number;
-  /** Injected for tests; defaults to crypto.subtle via protocol. */
+  /** Injected for tests; defaults to silent no-ops. */
   logger?: {
     info: (obj: unknown, msg?: string) => void;
     error: (obj: unknown, msg?: string) => void;

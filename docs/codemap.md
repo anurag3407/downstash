@@ -109,3 +109,40 @@ each path here exists and each source file appears here.
 ## Supabase scripts
 
 - `supabase/scripts/pg-local-reset.sh` — Recreate scratch DB and load migrations in order.
+
+## `apps/gateway` — additions
+
+- `apps/gateway/src/scheduled.ts` — Cron handler: PostgREST keep-alive ping (ADR 0010).
+- `apps/gateway/test/scheduled.test.ts` — Keep-alive logging and no-secret-leak tests.
+
+## `packages/client` — additions
+
+- `packages/client/README.md` — Install, usage, failover and `@upstash/redis` integration.
+
+## `tests` (@downstash/tests) — additions
+
+- `tests/capture/capture-scripts.ts` — Extract @upstash/ratelimit Lua scripts, resolve interpolation, verify SHA-1s.
+- `tests/capture/scripts.json` — Committed capture output; the input to the port migration.
+- `tests/compat/redis.test.ts` — `@upstash/redis` compatibility suite (both encodings).
+- `tests/compat/ratelimit.test.ts` — `@upstash/ratelimit` compatibility suite (4 algorithms).
+- `tests/compat/failover.test.ts` — Direct-RPC failover suite against the local stack.
+- `tests/differential/runner.ts` — Corpus runner with sort/float/ttlRange/scanCursor normalisers.
+- `tests/differential/differential.test.ts` — Runs every corpus against SRH + the gateway.
+- `tests/differential/scripts.test.ts` — Script-registry parity and reply shapes.
+- `tests/differential/corpus/index.ts` — Corpus aggregation and total step count.
+- `tests/differential/corpus/strings.ts` — String command corpus.
+- `tests/differential/corpus/keyspace.ts` — Keyspace and expiry corpus.
+- `tests/differential/corpus/hashes.ts` — Hash command corpus.
+- `tests/differential/corpus/lists.ts` — List command corpus.
+- `tests/differential/corpus/sets.ts` — Set command corpus.
+- `tests/differential/corpus/zsets.ts` — Sorted-set corpus.
+- `tests/differential/corpus/server.ts` — Server and misc command corpus.
+- `tests/helpers/postgrest-shim.ts` — PostgREST-compatible RPC server for local runs (test only).
+- `tests/helpers/stack.ts` — Boot the shim + `wrangler dev` for the live suites.
+- `tests/helpers/setup-stack.ts` — Vitest global setup that starts the stack once.
+
+## `supabase/migrations` — additions
+
+- `supabase/migrations/20261007001100_scripts_ratelimit.sql` — Nine native PL/pgSQL ports of the @upstash/ratelimit scripts.
+- `supabase/migrations/20261007001150_fix_zrange_option_case.sql` — ZRANGE options are case-insensitive.
+- `supabase/migrations/20261007001160_fix_scan_cursor_zrange_rev.sql` — SCAN cursor index fix; ZRANGE BYSCORE REV bounds.

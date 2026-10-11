@@ -1,8 +1,8 @@
 ---
 title: Docs index
 status: stable
-last_updated: 2026-10-07
-updated_by: P0-T1
+last_updated: 2026-10-11
+updated_by: P0-T2
 code_paths:
   - README.md
 ---
@@ -14,7 +14,7 @@ the Upstash REST protocol. Read the docs in this order if you are new here.
 
 ## Reading order
 
-1. [Project README](../../README.md) — what it is, how to run it.
+1. [Project README](../README.md) — what it is, how to run it.
 2. [Codemap](./codemap.md) — every source file, one line each.
 3. [Progress](./progress.md) — what is done, in progress, deviations.
 4. [Glossary](./glossary.md) — shared vocabulary.
@@ -31,6 +31,7 @@ the Upstash REST protocol. Read the docs in this order if you are new here.
 - [Documentation](./conventions/documentation.md)
 - [Code style (TypeScript)](./conventions/code-style-typescript.md)
 - [Code style (SQL)](./conventions/code-style-sql.md)
+- [Code style (React)](./conventions/code-style-react.md)
 - [Testing](./conventions/testing.md)
 - [Git](./conventions/git.md)
 
@@ -57,12 +58,28 @@ the Upstash REST protocol. Read the docs in this order if you are new here.
 - [Usage](./client/usage.md)
 - [Failover](./client/failover.md)
 
+## Web
+
+- [Routes](./web/routes.md)
+- [Data access](./web/data-access.md)
+- [Auth](./web/auth.md)
+- [Features](./web/features.md)
+
+## Design
+
+- [System](./design/system.md)
+- [Tokens](./design/tokens.md)
+- [Components](./design/components.md)
+- [Patterns](./design/patterns.md)
+- [Copy](./design/copy.md)
+
 ## Operations
 
 - [Local dev](./ops/local-dev.md)
 - [Deploy](./ops/deploy.md)
 - [Env vars](./ops/env-vars.md)
 - [Durability](./ops/durability.md)
+- [Quotas](./ops/quotas.md)
 - [Runbook](./ops/runbook.md)
 
 ## Comparisons
@@ -72,3 +89,16 @@ the Upstash REST protocol. Read the docs in this order if you are new here.
 ## Architecture decision records
 
 - [ADR template](./adr/0000-template.md)
+- [0001 Multi-database keyspace](./adr/0001-multi-database-keyspace.md)
+- [0002 Private downstash schema](./adr/0002-private-schema.md)
+- [0003 Token-checked failover](./adr/0003-token-checked-failover.md)
+- [0004 Token format and auth](./adr/0004-token-format-and-auth.md)
+- [0005 SQL is the engine](./adr/0005-sql-is-the-engine.md)
+- [0006 Command matrix](./adr/0006-command-matrix.md)
+- [0007 Script registry](./adr/0007-script-registry.md)
+- [0008 Value encoding](./adr/0008-value-encoding.md)
+- [0009 L1 cache opt-in](./adr/0009-l1-cache-opt-in.md)
+- [0010 Keep-alive](./adr/0010-keep-alive.md)
+- [0011 Control plane colocated](./adr/0011-control-plane-colocated.md)
+- [0012 Console direct SQL](./adr/0012-console-direct-sql.md)
+- [0013 Monospace exception](./adr/0013-monospace-exception.md)

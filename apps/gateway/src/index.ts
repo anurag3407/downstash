@@ -7,9 +7,14 @@ import { createApp, type App } from './app.ts';
 import type { Env } from './env.ts';
 import { readConfig } from './env.ts';
 import { PostgrestStorage } from './storage/postgrest-storage.ts';
+import { handleScheduled, type Logger } from './scheduled.ts';
 
 let app: App | null = null;
 let appEnvKey = '';
+/** Console logger for cron events; the request path uses the injected logger. */
+const deps: { loggerFor: (env: Env) => Logger } = {
+  loggerFor: () => console as unknown as Logger
+};
 
 /** Build (or reuse) the app for the given env. Rebuilds if the env changes. */
 function getApp(env: Env): App {
@@ -54,8 +59,7 @@ export default {
   ): Promise<void> {
     try {
       const a = getApp(env);
-      const ping = await a.deps.storage.ping();
-      console.log(JSON.stringify({ level: 'info', msg: 'keepalive', ok: ping.ok }));
+      await handleScheduled({ storage: a.deps.storage, log: deps.loggerFor(env) });
     } catch (err) {
       console.error(
         JSON.stringify({ level: 'error', msg: 'keepalive failed', error: String(err) })
