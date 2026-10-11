@@ -7,6 +7,8 @@ import { createHash, randomBytes } from 'node:crypto';
 import { afterAll } from 'vitest';
 import { sql, type TestDatabase } from './sql.ts';
 
+export type { TestDatabase };
+
 function genToken(kind: 'standard' | 'readonly'): string {
   const b = randomBytes(32)
     .toString('base64')
@@ -48,5 +50,5 @@ export async function createTestDatabase(): Promise<TestDatabase> {
     await sql`delete from downstash.databases where id = ${id}::uuid`;
   });
 
-  return { id, standard, readonly };
+  return { id, standard, readonly, sql };
 }

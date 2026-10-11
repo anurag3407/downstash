@@ -35,14 +35,11 @@ export class FakeStorage implements Storage {
       req: RunRequest
     ) => Promise<RunResponse | RunFailure> | RunResponse | RunFailure
   ) {
+    // Real storage returns the envelope array from `downstash.run` (§7.5.2)
+    // in every mode, so the fake does too: single mode is unwrapped by the
+    // route, not by the storage adapter.
     this.handler = (req) =>
-      Promise.resolve(
-        handler
-          ? handler(req)
-          : req.mode === 'single'
-            ? okRun({ result: 'PONG' })
-            : okRun([{ result: 'PONG' }])
-      );
+      Promise.resolve(handler ? handler(req) : okRun([{ result: 'PONG' }]));
   }
 
   async run(req: RunRequest): Promise<RunResponse | RunFailure> {

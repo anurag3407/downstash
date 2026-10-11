@@ -1,0 +1,60 @@
+/**
+ * @file tests/differential/corpus/keyspace.ts
+ * Keyspace and expiry corpus. ≥20 steps (§14.4).
+ */
+import type { Corpus } from '../runner.ts';
+
+export const keyspace: Corpus = {
+  family: 'keyspace',
+  steps: [
+    { cmd: ['MSET', 'k:a', '1', 'k:b', '2', 'k:c', '3'] },
+    { cmd: ['EXISTS', 'k:a', 'k:b', 'k:zz'] },
+    { cmd: ['TYPE', 'k:a'] },
+    { cmd: ['TYPE', 'k:none'] },
+    { cmd: ['KEYS', 'k:*'], normalize: 'sort' },
+    { cmd: ['KEYS', 'k:[ab]'], normalize: 'sort' },
+    { cmd: ['KEYS', 'k:?'], normalize: 'sort' },
+    { cmd: ['KEYS', 'k:*'], normalize: 'sort' },
+    { cmd: ['SCAN', '0', 'COUNT', '10'], normalize: 'sort' },
+    { cmd: ['SCAN', '0', 'MATCH', 'k:a'], normalize: 'sort' },
+    { cmd: ['SCAN', '0', 'MATCH', 'k:*', 'COUNT', '2'], normalize: 'sort' },
+    { cmd: ['SCAN', 'not-a-number'] },
+    { cmd: ['DBSIZE'] },
+    { cmd: ['RANDOMKEY'] },
+    { cmd: ['EXPIRE', 'k:a', '100'] },
+    { cmd: ['TTL', 'k:a'], normalize: 'ttlRange' },
+    { cmd: ['PERSIST', 'k:a'] },
+    { cmd: ['TTL', 'k:a'] },
+    { cmd: ['EXPIRE', 'k:a', '0'], errorPrefix: 'ERR' },
+    { cmd: ['EXPIRE', 'k:zz', '100'] },
+    { cmd: ['EXPIREAT', 'k:b', '99999999999'] },
+    { cmd: ['TTL', 'k:b'], normalize: 'ttlRange' },
+    { cmd: ['PEXPIRE', 'k:c', '60000'] },
+    { cmd: ['PTTL', 'k:c'], normalize: 'ttlRange' },
+    { cmd: ['EXPIRE', 'k:c', '100', 'NX'] },
+    { cmd: ['EXPIRE', 'k:c', '200', 'XX'] },
+    { cmd: ['EXPIRE', 'k:c', '300', 'GT'] },
+    { cmd: ['EXPIRE', 'k:c', '50', 'LT'] },
+    { cmd: ['RENAME', 'k:c', 'k:d'] },
+    { cmd: ['EXISTS', 'k:c', 'k:d'] },
+    { cmd: ['RENAMENX', 'k:d', 'k:e'] },
+    { cmd: ['RENAME', 'k:none', 'k:x'], errorPrefix: 'ERR' },
+    { cmd: ['DEL', 'k:e', 'k:none'] },
+    { cmd: ['DBSIZE'] },
+    { cmd: ['MSET', 'k:x', '1', 'k:y', '2', 'k:z', '3'] },
+    { cmd: ['KEYS', 'k:[xyz]'], normalize: 'sort' },
+    { cmd: ['KEYS', 'k:[^xy]'], normalize: 'sort' },
+    { cmd: ['KEYS', 'nomatch-*'], normalize: 'sort' },
+    { cmd: ['EXPIRE', 'k:x', '100', 'NX'] },
+    { cmd: ['EXPIRE', 'k:x', '100', 'NX'] },
+    { cmd: ['TTL', 'k:x'], normalize: 'ttlRange' },
+    { cmd: ['EXPIRE', 'k:x', '5', 'XX', 'GT'], errorPrefix: 'ERR' },
+    { cmd: ['EXPIRE', 'k:zz', '100', 'GT'] },
+    { cmd: ['EXPIRE', 'k:zz', '100', 'LT'], errorPrefix: 'ERR' },
+    { cmd: ['PERSIST', 'k:x'] },
+    { cmd: ['PERSIST', 'k:x'] },
+    { cmd: ['RANDOMKEY'] },
+    { cmd: ['SCAN', '0'], normalize: 'sort' },
+    { cmd: ['SCAN', '0', 'COUNT', '0'], errorPrefix: 'ERR' }
+  ]
+};

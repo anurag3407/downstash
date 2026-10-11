@@ -11,7 +11,7 @@ let storage: FakeStorage;
 
 beforeEach(() => {
   storage = new FakeStorage(() =>
-    okRun({ result: 'PONG' }, { dbId: 'db-1', readonly: false, l1TtlMs: 0 })
+    okRun([{ result: 'PONG' }], { dbId: 'db-1', readonly: false, l1TtlMs: 0 })
   );
   app = makeApp(storage);
 });
@@ -32,7 +32,7 @@ function post(body: unknown, token = VALID) {
 
 describe('POST / single', () => {
   it('forwards a command and returns the envelope', async () => {
-    storage = new FakeStorage(() => okRun({ result: 'bar' }));
+    storage = new FakeStorage(() => okRun([{ result: 'bar' }]));
     app = makeApp(storage);
     const res = await post(['GET', 'foo']);
     expect(res.status).toBe(200);
@@ -98,9 +98,7 @@ describe('POST /pipeline and /multi-exec', () => {
   });
 
   it('multi-exec maps to multi mode', async () => {
-    storage = new FakeStorage((req) =>
-      req.mode === 'multi' ? okRun([{ result: 'PONG' }]) : okRun({ result: 'PONG' })
-    );
+    storage = new FakeStorage((_req) => okRun([{ result: 'PONG' }]));
     app = makeApp(storage);
     const res = await app.hono.request('/multi-exec', {
       method: 'POST',

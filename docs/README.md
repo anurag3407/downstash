@@ -65,6 +65,10 @@ the Upstash REST protocol. Read the docs in this order if you are new here.
 - [Durability](./ops/durability.md)
 - [Runbook](./ops/runbook.md)
 
+## Comparisons
+
+- [Upstash user flow](./upstash-flow-comparison.md) — stage-by-stage diff, gaps, launch fixes.
+
 ## Architecture decision records
 
 - [ADR template](./adr/0000-template.md)

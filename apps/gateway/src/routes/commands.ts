@@ -168,7 +168,10 @@ export function registerCommandRoutes(app: Hono, deps: CommandRouteDeps): void {
     const finalDb = principal?.dbId ?? '';
 
     if (single) {
-      const envelope = (res.envelopes as ResultEnvelope) ?? { result: null };
+      // `downstash.run` always returns an envelope array (§7.5.2); single mode
+      // unwraps the first element so the reply shape matches the REST contract.
+      const first = (res.envelopes as ResultEnvelope[] | undefined)?.[0];
+      const envelope: ResultEnvelope = first ?? { result: null };
       if (
         l1State === 'MISS' &&
         principal &&

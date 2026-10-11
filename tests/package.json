@@ -10,5 +10,9 @@
     "test:sql": "vitest run --config vitest.sql.config.ts",
     "test:compat": "vitest run --config vitest.compat.config.ts",
     "test:diff": "vitest run --config vitest.diff.config.ts"
+  },
+  "devDependencies": {
+    "@upstash/ratelimit": "2.2.0",
+    "@upstash/redis": "1.39.0"
   }
 }

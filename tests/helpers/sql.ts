@@ -28,6 +28,8 @@ export interface TestDatabase {
   id: string;
   standard: string;
   readonly: string;
+  /** Shared client, for assertions against registry/control tables. */
+  sql: typeof import('./sql.ts').sql;
 }
 
 /** Execute one command against a database as the console (standard token). */

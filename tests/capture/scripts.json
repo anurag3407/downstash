@@ -1,0 +1,157 @@
+[
+  {
+    "sha1": "b2efc02798c8e9b471a10f9b1d5745db89923ff3",
+    "name": "script_fixed_window_limit",
+    "origin": "@upstash/ratelimit@2.2.0 singleRegion.fixedWindow.limit",
+    "source": "#!lua flags=allow-key-locking\n  local key           = KEYS[1]\n  local dynamicLimitKey = KEYS[2]  -- optional: key for dynamic limit in redis\n  local tokens        = tonumber(ARGV[1])  -- default limit\n  local window        = ARGV[2]\n  local incrementBy   = ARGV[3] -- increment rate per request at a given value, default is 1\n\n  -- Check for dynamic limit\n  local effectiveLimit = tokens\n  if dynamicLimitKey and dynamicLimitKey ~= \"\" then\n    local dynamicLimit = redis.call(\"GET\", dynamicLimitKey)\n    if dynamicLimit then\n      effectiveLimit = tonumber(dynamicLimit)\n    end\n  end\n\n  local r = redis.call(\"INCRBY\", key, incrementBy)\n  if r == tonumber(incrementBy) then\n  -- The first time this key is set, the value will be equal to incrementBy.\n  -- So we only need the expire command once\n  redis.call(\"PEXPIRE\", key, window)\n  end\n\n  return {r, effectiveLimit}\n",
+    "isWrite": true,
+    "keysMeaning": [
+      "counter key for the current fixed window",
+      "optional dynamic-limit key"
+    ],
+    "argvMeaning": [
+      "default tokens per window",
+      "window in ms",
+      "increment per request"
+    ],
+    "driver": {
+      "algorithm": "fixedWindow",
+      "method": "limit",
+      "region": "singleRegion"
+    }
+  },
+  {
+    "sha1": "823cb2a5a902d69681244f5e28e5ebb8f2a89edd",
+    "name": "script_fixed_window_remaining",
+    "origin": "@upstash/ratelimit@2.2.0 singleRegion.fixedWindow.getRemaining",
+    "source": "#!lua flags=allow-key-locking\n  local key = KEYS[1]\n  local dynamicLimitKey = KEYS[2]  -- optional: key for dynamic limit in redis\n  local tokens = tonumber(ARGV[1])  -- default limit\n\n  -- Check for dynamic limit\n  local effectiveLimit = tokens\n  if dynamicLimitKey and dynamicLimitKey ~= \"\" then\n    local dynamicLimit = redis.call(\"GET\", dynamicLimitKey)\n    if dynamicLimit then\n      effectiveLimit = tonumber(dynamicLimit)\n    end\n  end\n\n  local value = redis.call('GET', key)\n  local usedTokens = 0\n  if value then\n    usedTokens = tonumber(value)\n  end\n  \n  return {effectiveLimit - usedTokens, effectiveLimit}\n",
+    "isWrite": false,
+    "keysMeaning": [
+      "counter key for the current fixed window",
+      "optional dynamic-limit key"
+    ],
+    "argvMeaning": ["default tokens per window"],
+    "driver": {
+      "algorithm": "fixedWindow",
+      "method": "getRemaining",
+      "region": "singleRegion"
+    }
+  },
+  {
+    "sha1": "74740bb3d7792848093cdef586b6b6037c455fd6",
+    "name": "script_sliding_window_limit",
+    "origin": "@upstash/ratelimit@2.2.0 singleRegion.slidingWindow.limit",
+    "source": "#!lua flags=allow-key-locking\n  local currentKey  = KEYS[1]           -- identifier including prefixes\n  local previousKey = KEYS[2]           -- key of the previous bucket\n  local dynamicLimitKey = KEYS[3]       -- optional: key for dynamic limit in redis\n  local tokens      = tonumber(ARGV[1]) -- default tokens per window\n  local now         = ARGV[2]           -- current timestamp in milliseconds\n  local window      = ARGV[3]           -- interval in milliseconds\n  local incrementBy = tonumber(ARGV[4]) -- increment rate per request at a given value, default is 1\n\n  -- Check for dynamic limit\n  local effectiveLimit = tokens\n  if dynamicLimitKey and dynamicLimitKey ~= \"\" then\n    local dynamicLimit = redis.call(\"GET\", dynamicLimitKey)\n    if dynamicLimit then\n      effectiveLimit = tonumber(dynamicLimit)\n    end\n  end\n\n  local requestsInCurrentWindow = redis.call(\"GET\", currentKey)\n  if requestsInCurrentWindow == false then\n    requestsInCurrentWindow = 0\n  end\n\n  local requestsInPreviousWindow = redis.call(\"GET\", previousKey)\n  if requestsInPreviousWindow == false then\n    requestsInPreviousWindow = 0\n  end\n  local percentageInCurrent = ( now % window ) / window\n  -- weighted requests to consider from the previous window\n  requestsInPreviousWindow = math.floor(( 1 - percentageInCurrent ) * requestsInPreviousWindow)\n\n  -- Only check limit if not refunding (negative rate)\n  if incrementBy > 0 and requestsInPreviousWindow + requestsInCurrentWindow >= effectiveLimit then\n    return {-1, effectiveLimit}\n  end\n\n  local newValue = redis.call(\"INCRBY\", currentKey, incrementBy)\n  if newValue == incrementBy then\n    -- The first time this key is set, the value will be equal to incrementBy.\n    -- So we only need the expire command once\n    redis.call(\"PEXPIRE\", currentKey, window * 2 + 1000) -- Enough time to overlap with a new window + 1 second\n  end\n  return {effectiveLimit - ( newValue + requestsInPreviousWindow ), effectiveLimit}\n",
+    "isWrite": true,
+    "keysMeaning": [
+      "counter key for the current window",
+      "counter key for the previous window",
+      "optional dynamic-limit key"
+    ],
+    "argvMeaning": [
+      "default tokens per window",
+      "now in ms",
+      "window in ms",
+      "increment per request"
+    ],
+    "driver": {
+      "algorithm": "slidingWindow",
+      "method": "limit",
+      "region": "singleRegion"
+    }
+  },
+  {
+    "sha1": "7ca36169e0fc9caedd81b4eef8e99854c157f9b5",
+    "name": "script_sliding_window_remaining",
+    "origin": "@upstash/ratelimit@2.2.0 singleRegion.slidingWindow.getRemaining",
+    "source": "#!lua flags=allow-key-locking\n  local currentKey  = KEYS[1]           -- identifier including prefixes\n  local previousKey = KEYS[2]           -- key of the previous bucket\n  local dynamicLimitKey = KEYS[3]       -- optional: key for dynamic limit in redis\n  local tokens      = tonumber(ARGV[1]) -- default tokens per window\n  local now         = ARGV[2]           -- current timestamp in milliseconds\n  local window      = ARGV[3]           -- interval in milliseconds\n\n  -- Check for dynamic limit\n  local effectiveLimit = tokens\n  if dynamicLimitKey and dynamicLimitKey ~= \"\" then\n    local dynamicLimit = redis.call(\"GET\", dynamicLimitKey)\n    if dynamicLimit then\n      effectiveLimit = tonumber(dynamicLimit)\n    end\n  end\n\n  local requestsInCurrentWindow = redis.call(\"GET\", currentKey)\n  if requestsInCurrentWindow == false then\n    requestsInCurrentWindow = 0\n  end\n\n  local requestsInPreviousWindow = redis.call(\"GET\", previousKey)\n  if requestsInPreviousWindow == false then\n    requestsInPreviousWindow = 0\n  end\n\n  local percentageInCurrent = ( now % window ) / window\n  -- weighted requests to consider from the previous window\n  requestsInPreviousWindow = math.floor(( 1 - percentageInCurrent ) * requestsInPreviousWindow)\n\n  local usedTokens = requestsInPreviousWindow + requestsInCurrentWindow\n  return {effectiveLimit - usedTokens, effectiveLimit}\n",
+    "isWrite": false,
+    "keysMeaning": [
+      "counter key for the current window",
+      "counter key for the previous window",
+      "optional dynamic-limit key"
+    ],
+    "argvMeaning": ["default tokens per window", "now in ms", "window in ms"],
+    "driver": {
+      "algorithm": "slidingWindow",
+      "method": "getRemaining",
+      "region": "singleRegion"
+    }
+  },
+  {
+    "sha1": "d60be5bd3d83482ae229309f1f7425424f891204",
+    "name": "script_token_bucket_limit",
+    "origin": "@upstash/ratelimit@2.2.0 singleRegion.tokenBucket.limit",
+    "source": "#!lua flags=allow-key-locking\n  local key         = KEYS[1]           -- identifier including prefixes\n  local dynamicLimitKey = KEYS[2]       -- optional: key for dynamic limit in redis\n  local maxTokens   = tonumber(ARGV[1]) -- default maximum number of tokens\n  local interval    = tonumber(ARGV[2]) -- size of the window in milliseconds\n  local refillRate  = tonumber(ARGV[3]) -- how many tokens are refilled after each interval\n  local now         = tonumber(ARGV[4]) -- current timestamp in milliseconds\n  local incrementBy = tonumber(ARGV[5]) -- how many tokens to consume, default is 1\n\n  -- Check for dynamic limit\n  local effectiveLimit = maxTokens\n  if dynamicLimitKey and dynamicLimitKey ~= \"\" then\n    local dynamicLimit = redis.call(\"GET\", dynamicLimitKey)\n    if dynamicLimit then\n      effectiveLimit = tonumber(dynamicLimit)\n    end\n  end\n        \n  local bucket = redis.call(\"HMGET\", key, \"refilledAt\", \"tokens\")\n        \n  local refilledAt\n  local tokens\n\n  if bucket[1] == false then\n    refilledAt = now\n    tokens = effectiveLimit\n  else\n    refilledAt = tonumber(bucket[1])\n    tokens = tonumber(bucket[2])\n  end\n        \n  if now >= refilledAt + interval then\n    local numRefills = math.floor((now - refilledAt) / interval)\n    tokens = math.min(effectiveLimit, tokens + numRefills * refillRate)\n\n    refilledAt = refilledAt + numRefills * interval\n  end\n\n  -- Only reject when consuming (not refunding) and there are not enough tokens\n  -- for this request. Checking tokens == 0 only covered incrementBy == 1: with\n  -- a larger rate (e.g. 2 tokens left, incrementBy 5) the request fell through,\n  -- drove tokens negative and still wrote it back, so a rejected request\n  -- consumed tokens and a single large rate could lock the identifier out.\n  if incrementBy > 0 and tokens < incrementBy then\n    return {-1, refilledAt + interval, effectiveLimit}\n  end\n\n  local remaining = tokens - incrementBy\n  local expireAt = math.ceil(((effectiveLimit - remaining) / refillRate)) * interval\n        \n  redis.call(\"HSET\", key, \"refilledAt\", refilledAt, \"tokens\", remaining)\n\n  if (expireAt > 0) then\n    redis.call(\"PEXPIRE\", key, expireAt)\n  end\n  return {remaining, refilledAt + interval, effectiveLimit}\n",
+    "isWrite": true,
+    "keysMeaning": ["bucket hash key", "optional dynamic-limit key"],
+    "argvMeaning": [
+      "default maximum tokens",
+      "refill interval in ms",
+      "tokens refilled per interval",
+      "now in ms",
+      "tokens to consume"
+    ],
+    "driver": {
+      "algorithm": "tokenBucket",
+      "method": "limit",
+      "region": "singleRegion"
+    }
+  },
+  {
+    "sha1": "40daf4a441df736f5c99f8b77bbe176c909e5de4",
+    "name": "script_token_bucket_remaining",
+    "origin": "@upstash/ratelimit@2.2.0 singleRegion.tokenBucket.getRemaining",
+    "source": "#!lua flags=allow-key-locking\n  local key         = KEYS[1]\n  local dynamicLimitKey = KEYS[2]       -- optional: key for dynamic limit in redis\n  local maxTokens   = tonumber(ARGV[1]) -- default maximum number of tokens\n\n  -- Check for dynamic limit\n  local effectiveLimit = maxTokens\n  if dynamicLimitKey and dynamicLimitKey ~= \"\" then\n    local dynamicLimit = redis.call(\"GET\", dynamicLimitKey)\n    if dynamicLimit then\n      effectiveLimit = tonumber(dynamicLimit)\n    end\n  end\n        \n  local bucket = redis.call(\"HMGET\", key, \"refilledAt\", \"tokens\")\n\n  if bucket[1] == false then\n    return {effectiveLimit, -1, effectiveLimit}\n  end\n        \n  return {tonumber(bucket[2]), tonumber(bucket[1]), effectiveLimit}\n",
+    "isWrite": false,
+    "keysMeaning": ["bucket hash key", "optional dynamic-limit key"],
+    "argvMeaning": ["default maximum tokens"],
+    "driver": {
+      "algorithm": "tokenBucket",
+      "method": "getRemaining",
+      "region": "singleRegion"
+    }
+  },
+  {
+    "sha1": "1861a700bafe96c833a483af6b1c28a8897cfdb0",
+    "name": "script_cached_fixed_window_limit",
+    "origin": "@upstash/ratelimit@2.2.0 singleRegion.cachedFixedWindow.limit",
+    "source": "#!lua flags=allow-key-locking\n  local key     = KEYS[1]\n  local window  = ARGV[1]\n  local incrementBy   = ARGV[2] -- increment rate per request at a given value, default is 1\n\n  local r = redis.call(\"INCRBY\", key, incrementBy)\n  if r == incrementBy then\n  -- The first time this key is set, the value will be equal to incrementBy.\n  -- So we only need the expire command once\n  redis.call(\"PEXPIRE\", key, window)\n  end\n      \n  return r\n",
+    "isWrite": true,
+    "keysMeaning": ["counter key for the current fixed window"],
+    "argvMeaning": ["window in ms", "increment per request"],
+    "driver": {
+      "algorithm": "cachedFixedWindow",
+      "method": "limit",
+      "region": "singleRegion"
+    }
+  },
+  {
+    "sha1": "eb82f0e853d2fc9a236fa9bfbe704fda6ac2fc36",
+    "name": "script_cached_fixed_window_remaining",
+    "origin": "@upstash/ratelimit@2.2.0 singleRegion.cachedFixedWindow.getRemaining",
+    "source": "#!lua flags=allow-key-locking\n  local key = KEYS[1]\n  local tokens = 0\n\n  local value = redis.call('GET', key)\n  if value then\n      tokens = value\n  end\n  return tokens\n",
+    "isWrite": false,
+    "keysMeaning": ["counter key for the current fixed window"],
+    "argvMeaning": ["(unused by the client)"],
+    "driver": {
+      "algorithm": "cachedFixedWindow",
+      "method": "getRemaining",
+      "region": "singleRegion"
+    }
+  },
+  {
+    "sha1": "54bd274ddc59fb3be0f42deee2f64322a10e2b50",
+    "name": "script_reset_used_tokens",
+    "origin": "@upstash/ratelimit@2.2.0 singleRegion.reset.resetUsedTokens",
+    "source": "\n      local pattern = KEYS[1]\n\n      -- Initialize cursor to start from 0\n      local cursor = \"0\"\n\n      repeat\n          -- Scan for keys matching the pattern\n          local scan_result = redis.call('SCAN', cursor, 'MATCH', pattern)\n\n          -- Extract cursor for the next iteration\n          cursor = scan_result[1]\n\n          -- Extract keys from the scan result\n          local keys = scan_result[2]\n\n          for i=1, #keys do\n          redis.call('DEL', keys[i])\n          end\n\n      -- Continue scanning until cursor is 0 (end of keyspace)\n      until cursor == \"0\"\n    ",
+    "isWrite": true,
+    "keysMeaning": ["glob pattern of keys to delete"],
+    "argvMeaning": ["(unused)"],
+    "driver": {
+      "algorithm": "reset",
+      "method": "resetUsedTokens",
+      "region": "singleRegion"
+    }
+  }
+]
