@@ -435,7 +435,7 @@ begin
   if r.expires_at is null then
     return to_jsonb((-1)::bigint);
   end if;
-  return to_jsonb(round(extract(epoch from (r.expires_at - now())) * 1000)::bigint / 1000);
+  return to_jsonb(round(extract(epoch from (r.expires_at - now())))::bigint);
 end;
 $$;
 comment on function downstash.cmd_ttl(uuid, text[]) is 'TTL key';

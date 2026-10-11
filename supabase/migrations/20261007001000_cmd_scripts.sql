@@ -24,11 +24,11 @@ declare
 begin
   v_numkeys := downstash.to_int(p_args[2], 'ERR value is not an integer or out of range');
   if v_numkeys < 0 then
-    raise exception 'ERR Downstash: numkeys must be non-negative';
+    perform downstash.raise_err('ERR Downstash: numkeys must be non-negative');
   end if;
   -- args[1] = script body/sha, args[2] = numkeys, args[3..] = keys then argv.
   if v_len < 2 + v_numkeys then
-    raise exception 'ERR Downstash: number of keys can''t be greater than number of args';
+    perform downstash.raise_err('ERR Downstash: number of keys can''t be greater than number of args');
   end if;
   o_keys := p_args[3 : 2 + v_numkeys];
   o_argv := p_args[3 + v_numkeys : v_len];
@@ -57,18 +57,18 @@ begin
   select * into v_script from downstash.resolve_script(v_sha);
   if not found then
     if p_by_sha then
-      raise exception 'NOSCRIPT No matching script. Please use EVAL.';
+      perform downstash.raise_err('NOSCRIPT No matching script. Please use EVAL.');
     else
-      raise exception 'ERR Downstash: arbitrary Lua is not supported (script % is not in the registry)', v_sha;
+      perform downstash.raise_err(format('ERR Downstash: arbitrary Lua is not supported (script %s is not in the registry)', v_sha));
     end if;
   end if;
 
   -- Write-permission checks (§7.8).
   if p_readonly and v_script.is_write then
-    raise exception 'ERR Write commands are not allowed from read-only scripts';
+    perform downstash.raise_err('ERR Write commands are not allowed from read-only scripts');
   end if;
   if v_script.is_write and current_setting('downstash.readonly', true) = 'true' then
-    raise exception 'NOPERM this token has no permissions to run the ''EVAL'' command';
+    perform downstash.raise_err('NOPERM this token has no permissions to run the ''EVAL'' command');
   end if;
 
   execute format('select downstash.%I($1, $2, $3)', v_script.name)
@@ -99,10 +99,10 @@ declare
   v_len int := coalesce(array_length(p_args, 1), 0);
 begin
   if v_sub = 'LOAD' then
-    if v_len <> 2 then raise exception 'ERR syntax error'; end if;
+    if v_len <> 2 then perform downstash.raise_err('ERR syntax error'); end if;
     v_sha := downstash.script_sha(p_args[2]);
     if exists(select 1 from downstash.resolve_script(v_sha)) then return to_jsonb(v_sha); end if;
-    raise exception 'ERR Downstash: arbitrary Lua is not supported (script % is not in the registry)', v_sha;
+    perform downstash.raise_err(format('ERR Downstash: arbitrary Lua is not supported (script %s is not in the registry)', v_sha));
   elsif v_sub = 'EXISTS' then
     while i <= v_len loop
       if exists(select 1 from downstash.resolve_script(p_args[i])) then v_out := v_out || '1'::jsonb;
@@ -113,7 +113,7 @@ begin
   elsif v_sub = 'FLUSH' then
     return '"OK"'::jsonb;  -- no-op (registry is static)
   else
-    raise exception 'ERR Unknown subcommand or wrong number of arguments for ''%''. Try SCRIPT HELP.', v_sub;
+    perform downstash.raise_err(format('ERR Unknown subcommand or wrong number of arguments for ''%s''. Try SCRIPT HELP.', v_sub));
   end if;
 end;
 $$;

@@ -91,7 +91,6 @@ begin
       v_val := (select jsonb_agg(e) from (select jsonb_array_elements(v_val) as e offset v_cnt) t);
     else
       v_out := (select jsonb_agg(e) from (select e from jsonb_array_elements(v_val) with ordinality as t(e, ord) order by ord desc limit v_cnt) s);
-      v_out := (select jsonb_agg(e) from (select e from (select jsonb_array_elements(v_val) as e) sub order by 1) z);
       v_val := (select jsonb_agg(e) from (select jsonb_array_elements(v_val) as e limit v_len - v_cnt) t);
     end if;
     v_val := coalesce(v_val, '[]'::jsonb);

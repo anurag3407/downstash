@@ -37,16 +37,18 @@ immutable
 set search_path = ''
 as $$
 declare
-  v bigint;
+  v_num numeric;
 begin
   if p_text !~ '^(0|-?[1-9][0-9]{0,18})$' then
     perform downstash.raise_err(p_message);
   end if;
-  v := p_text::bigint;
-  if v < -9223372036854775808 or v > 9223372036854775807 then
+  -- Compare as numeric first so a 19-digit value just past the bigint bounds
+  -- returns the friendly error instead of a raw out-of-range cast exception.
+  v_num := p_text::numeric;
+  if v_num < -9223372036854775808 or v_num > 9223372036854775807 then
     perform downstash.raise_err(p_message);
   end if;
-  return v;
+  return v_num::bigint;
 end;
 $$;
 
@@ -466,6 +468,7 @@ begin
     end loop;
   end if;
   execute format('select %s($1, $2)', r.handler) into o_result using p_db, p_argv[2:v_n];
+  o_result := coalesce(o_result, 'null'::jsonb);
   o_flags := r.flags;
 end;
 $$;
