@@ -1,0 +1,154 @@
+/**
+ * @file apps/web/app/globals.css
+ * Global styles + the Neo-brutalism design tokens — the single source of truth.
+ * @see docs/design/tokens.md
+ */
+@layer theme, base, clerk, components, utilities;
+@import 'tailwindcss';
+
+@theme {
+  /* Reset the default palettes so off-brand utilities (gray-500, rounded-lg,
+     shadow-lg, blur-*) do not exist at all. §11.2. */
+  --color-*: initial;
+  --radius-*: initial;
+  --shadow-*: initial;
+  --inset-shadow-*: initial;
+  --drop-shadow-*: initial;
+  --blur-*: initial;
+  --ease-*: initial;
+  --font-*: initial;
+
+  --color-neo-canvas: #fffdf5;
+  --color-neo-ink: #000000;
+  --color-neo-accent: #ff6b6b;
+  --color-neo-secondary: #ffd93d;
+  --color-neo-muted: #c4b5fd;
+  --color-black: #000000;
+  --color-white: #ffffff;
+
+  --font-sans: var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-space-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --shadow-neo-xs: 2px 2px 0px 0px #000;
+  --shadow-neo-sm: 4px 4px 0px 0px #000;
+  --shadow-neo-hover: 6px 6px 0px 0px #000;
+  --shadow-neo-md: 8px 8px 0px 0px #000;
+  --shadow-neo-lg: 12px 12px 0px 0px #000;
+  --shadow-neo-xl: 16px 16px 0px 0px #000;
+  --shadow-neo-white-md: 8px 8px 0px 0px #fff;
+  --shadow-neo-white-xl: 20px 20px 0px 0px #fff;
+  --shadow-neo-accent-sm: 4px 4px 0px 0px #ff6b6b;
+  --shadow-neo-secondary-md: 8px 8px 0px 0px #ffd93d;
+
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+
+  --animate-spin-slow: spin-slow 10s linear infinite;
+  --animate-pop-in: pop-in 150ms ease-out;
+  --animate-wiggle: wiggle 300ms linear;
+
+  @keyframes spin-slow {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  @keyframes pop-in {
+    from {
+      transform: translate(-50%, -48%) scale(0.96);
+      opacity: 0;
+    }
+    to {
+      transform: translate(-50%, -50%) scale(1);
+      opacity: 1;
+    }
+  }
+  @keyframes wiggle {
+    0%,
+    100% {
+      transform: rotate(0deg);
+    }
+    25% {
+      transform: rotate(-3deg);
+    }
+    75% {
+      transform: rotate(3deg);
+    }
+  }
+}
+
+@utility text-stroke {
+  -webkit-text-stroke: 2px #000;
+  color: transparent;
+}
+@utility text-stroke-white {
+  -webkit-text-stroke: 2px #fff;
+  color: transparent;
+}
+@utility text-shadow-neo {
+  text-shadow: 4px 4px 0px #000;
+}
+@utility text-shadow-neo-lg {
+  text-shadow: 6px 6px 0px #000;
+}
+@utility bg-halftone {
+  background-image: radial-gradient(#000 1.5px, transparent 1.5px);
+  background-size: 20px 20px;
+}
+@utility bg-dots {
+  background-image: radial-gradient(circle, #000 2px, transparent 2.5px);
+  background-size: 30px 30px;
+}
+@utility bg-grid {
+  background-size: 40px 40px;
+  background-image: linear-gradient(to right, rgba(0, 0, 0, 0.1) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.1) 1px, transparent 1px);
+}
+@utility bg-noise {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'%2F%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+@utility bg-stripes {
+  background-image: repeating-linear-gradient(45deg, #000 0 2px, transparent 2px 12px);
+}
+
+@layer base {
+  html {
+    background-color: var(--color-neo-canvas);
+    color: var(--color-neo-ink);
+  }
+  body {
+    @apply bg-neo-canvas font-sans font-bold text-black antialiased;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-black uppercase tracking-tighter;
+  }
+  ::selection {
+    background: var(--color-neo-secondary);
+    color: #000;
+  }
+  :focus-visible {
+    outline: 3px solid #000;
+    outline-offset: 3px;
+  }
+  code,
+  kbd,
+  samp,
+  pre {
+    @apply font-mono;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

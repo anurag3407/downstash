@@ -1,0 +1,19 @@
+/**
+ * @file apps/web/app/icon.svg
+ * Favicon: the logo mark — an accent square with a download arrow.
+ * @see docs/design/components.md
+ */
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 64 64"
+>
+  <rect x="6" y="6" width="56" height="56" fill="#000" />
+  <rect x="2" y="2" width="54" height="54" fill="#FF6B6B" stroke="#000" strokeWidth="4" />
+  <path
+    d="M29 14v20m-9-9 9 9 9-9M17 42h24"
+    fill="none"
+    stroke="#000"
+    strokeWidth="6"
+    strokeLinecap="square"
+  />
+</svg>
